@@ -13,8 +13,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  msg/VesselData.msg
-  msg/ControlData.msg
+  msg/Vessel.msg
+  msg/Control.msg
+  msg/Flight.msg
 )
 
 

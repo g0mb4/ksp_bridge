@@ -79,12 +79,12 @@ void KSPBridge::find_active_vessel()
 
 void KSPBridge::init_publishers()
 {
-    m_vessel_data_publisher = create_publisher<ksp_bridge_interfaces::msg::VesselData>("/vessel", 10);
-    m_control_data_publisher = create_publisher<ksp_bridge_interfaces::msg::ControlData>("/control", 10);
+    m_vessel_publisher = create_publisher<ksp_bridge_interfaces::msg::Vessel>("/vessel", 10);
+    m_control_publisher = create_publisher<ksp_bridge_interfaces::msg::Control>("/control", 10);
+    m_flight_publisher = create_publisher<ksp_bridge_interfaces::msg::Flight>("/flight", 10);
 }
 
-bool KSPBridge::gather_data(ksp_bridge_interfaces::msg::VesselData& vessel_data,
-    ksp_bridge_interfaces::msg::ControlData& control_data)
+bool KSPBridge::gather_data()
 {
     if (!is_valid_screen()) {
         return false;
@@ -94,32 +94,33 @@ bool KSPBridge::gather_data(ksp_bridge_interfaces::msg::VesselData& vessel_data,
         auto flight = m_vessel->flight();
         auto control = m_vessel->control();
 
-        vessel_data.name = m_vessel->name();
-        vessel_data.mass = m_vessel->mass();
-        vessel_data.dry_mass = m_vessel->dry_mass();
+        m_vessel_data.name = m_vessel->name();
+        m_vessel_data.type = (uint8_t)m_vessel->type();
+        m_vessel_data.mass = m_vessel->mass();
+        m_vessel_data.dry_mass = m_vessel->dry_mass();
 
-        vessel_data.g_force = flight.g_force();
-        vessel_data.mean_altitude = flight.mean_altitude();
-        vessel_data.surface_altitude = flight.surface_altitude();
-        vessel_data.bedrock_altitude = flight.bedrock_altitude();
-        vessel_data.elevation = flight.elevation();
-        vessel_data.latitude = flight.latitude();
-        vessel_data.longitude = flight.longitude();
+        m_flight_data.g_force = flight.g_force();
+        m_flight_data.mean_altitude = flight.mean_altitude();
+        m_flight_data.surface_altitude = flight.surface_altitude();
+        m_flight_data.bedrock_altitude = flight.bedrock_altitude();
+        m_flight_data.elevation = flight.elevation();
+        m_flight_data.latitude = flight.latitude();
+        m_flight_data.longitude = flight.longitude();
 
-        control_data.sas = control.sas();
-        control_data.rcs = control.rcs();
-        control_data.gear = control.gear();
-        control_data.legs = control.legs();
-        control_data.wheels = control.wheels();
-        control_data.lights = control.lights();
-        control_data.brakes = control.brakes();
-        control_data.throttle = control.throttle();
-        control_data.pitch = control.pitch();
-        control_data.yaw = control.yaw();
-        control_data.roll = control.roll();
-        control_data.forward = control.forward();
-        control_data.up = control.up();
-        control_data.right = control.right();
+        m_control_data.sas = control.sas();
+        m_control_data.rcs = control.rcs();
+        m_control_data.gear = control.gear();
+        m_control_data.legs = control.legs();
+        m_control_data.wheels = control.wheels();
+        m_control_data.lights = control.lights();
+        m_control_data.brakes = control.brakes();
+        m_control_data.throttle = control.throttle();
+        m_control_data.pitch = control.pitch();
+        m_control_data.yaw = control.yaw();
+        m_control_data.roll = control.roll();
+        m_control_data.forward = control.forward();
+        m_control_data.up = control.up();
+        m_control_data.right = control.right();
     } catch (...) {
         return false;
     }
@@ -131,11 +132,9 @@ void KSPBridge::publish_data()
 {
     validate_active_vessel();
 
-    auto vessel_data = ksp_bridge_interfaces::msg::VesselData();
-    auto control_data = ksp_bridge_interfaces::msg::ControlData();
-
-    if (gather_data(vessel_data, control_data)) {
-        m_vessel_data_publisher->publish(vessel_data);
-        m_control_data_publisher->publish(control_data);
+    if (gather_data()) {
+        m_vessel_publisher->publish(m_vessel_data);
+        m_control_publisher->publish(m_control_data);
+        m_flight_publisher->publish(m_flight_data);
     }
 }
