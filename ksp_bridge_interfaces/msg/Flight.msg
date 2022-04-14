@@ -1,5 +1,7 @@
 # https://krpc.github.io/krpc/cpp/api/space-center/flight.html
 
+# TODO: implement all
+
 float32 g_force
 float64 mean_altitude
 float64 surface_altitude

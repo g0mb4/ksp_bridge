@@ -107,20 +107,38 @@ bool KSPBridge::gather_data()
         m_flight_data.latitude = flight.latitude();
         m_flight_data.longitude = flight.longitude();
 
+        m_control_data.source = (uint8_t)control.source();
+        m_control_data.state = (uint8_t)control.state();
         m_control_data.sas = control.sas();
+        m_control_data.sas_mode = (uint8_t)control.sas_mode();
+        m_control_data.speed_mode = (uint8_t)control.speed_mode();
         m_control_data.rcs = control.rcs();
+        m_control_data.reaction_wheels = control.reaction_wheels();
         m_control_data.gear = control.gear();
         m_control_data.legs = control.legs();
         m_control_data.wheels = control.wheels();
         m_control_data.lights = control.lights();
         m_control_data.brakes = control.brakes();
+        m_control_data.antennas = control.antennas();
+        m_control_data.cargo_bays = control.cargo_bays();
+        m_control_data.intakes = control.intakes();
+        m_control_data.parachutes = control.parachutes();
+        m_control_data.radiators = control.radiators();
+        m_control_data.resource_harvesters = control.resource_harvesters();
+        m_control_data.resource_harvesters_active = control.resource_harvesters_active();
+        m_control_data.solar_panels = control.solar_panels();
+        m_control_data.abort = control.abort();
         m_control_data.throttle = control.throttle();
+        m_control_data.input_mode = (uint8_t)control.input_mode();
         m_control_data.pitch = control.pitch();
         m_control_data.yaw = control.yaw();
         m_control_data.roll = control.roll();
         m_control_data.forward = control.forward();
         m_control_data.up = control.up();
         m_control_data.right = control.right();
+        m_control_data.wheel_throttle = control.wheel_throttle();
+        m_control_data.wheel_steering = control.wheel_steering();
+        m_control_data.current_stage = control.current_stage();
     } catch (...) {
         return false;
     }

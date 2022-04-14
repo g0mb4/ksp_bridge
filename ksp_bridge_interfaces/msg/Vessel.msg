@@ -1,5 +1,7 @@
 # https://krpc.github.io/krpc/cpp/api/space-center/vessel.html
 
+# TODO: implement all
+
 uint8 TYPE_BASE = 0
 uint8 TYPE_DEBRIS = 1
 uint8 TYPE_LANDER = 2
