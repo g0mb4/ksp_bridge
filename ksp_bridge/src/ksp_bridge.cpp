@@ -74,14 +74,19 @@ void KSPBridge::find_active_vessel()
     }
 
     RCLCPP_INFO(get_logger(), "Vessel found: %s", m_vessel->name().c_str());
-    init_publishers();
+    init_communication();
 }
 
-void KSPBridge::init_publishers()
+void KSPBridge::init_communication()
 {
     m_vessel_publisher = create_publisher<ksp_bridge_interfaces::msg::Vessel>("/vessel", 10);
     m_control_publisher = create_publisher<ksp_bridge_interfaces::msg::Control>("/control", 10);
     m_flight_publisher = create_publisher<ksp_bridge_interfaces::msg::Flight>("/flight", 10);
+
+    m_throttle_sub = create_subscription<ksp_bridge_interfaces::msg::Float>(
+        "/throttle",
+        10,
+        std::bind(&KSPBridge::throttle_sub, this, std::placeholders::_1));
 }
 
 bool KSPBridge::gather_data()
@@ -139,8 +144,8 @@ bool KSPBridge::gather_data()
         m_control_data.wheel_throttle = control.wheel_throttle();
         m_control_data.wheel_steering = control.wheel_steering();
         m_control_data.current_stage = control.current_stage();
-    } catch (...) {
-        return false;
+    } catch (const std::exception& ex) {
+        RCLCPP_ERROR(get_logger(), "%s", ex.what());
     }
 
     return true;
@@ -154,5 +159,20 @@ void KSPBridge::publish_data()
         m_vessel_publisher->publish(m_vessel_data);
         m_control_publisher->publish(m_control_data);
         m_flight_publisher->publish(m_flight_data);
+    }
+}
+
+void KSPBridge::throttle_sub(const ksp_bridge_interfaces::msg::Float::SharedPtr msg)
+{
+    if (msg->value > 1 || msg->value < 0) {
+        RCLCPP_WARN(get_logger(), "Throttle must be between 0 and 1, current value is %f, will be clamped.", msg->value);
+    }
+
+    float value = clamp<float>(msg->value, 0, 1);
+
+    try {
+        m_vessel->control().set_throttle(value);
+    } catch (const std::exception& ex) {
+        RCLCPP_ERROR(get_logger(), "%s", ex.what());
     }
 }

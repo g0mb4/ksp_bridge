@@ -5,6 +5,7 @@
 #include <krpc/services/space_center.hpp>
 #include <ksp_bridge_interfaces/msg/control.hpp>
 #include <ksp_bridge_interfaces/msg/flight.hpp>
+#include <ksp_bridge_interfaces/msg/float.hpp>
 #include <ksp_bridge_interfaces/msg/vessel.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -18,11 +19,25 @@ private:
     bool is_valid_screen();
 
     void find_active_vessel();
-    void init_publishers();
+    void init_communication();
 
     bool gather_data();
 
     void publish_data();
+
+    template <typename T>
+    T clamp(T val, T min, T max)
+    {
+        if (val < min) {
+            return min;
+        } else if (val > max) {
+            return max;
+        } else {
+            return val;
+        }
+    }
+
+    void throttle_sub(const ksp_bridge_interfaces::msg::Float::SharedPtr msg);
 
     std::unique_ptr<krpc::Client> m_ksp_client;
     std::unique_ptr<krpc::services::KRPC> m_krpc;
@@ -39,4 +54,6 @@ private:
     ksp_bridge_interfaces::msg::Vessel m_vessel_data;
     ksp_bridge_interfaces::msg::Control m_control_data;
     ksp_bridge_interfaces::msg::Flight m_flight_data;
+
+    rclcpp::Subscription<ksp_bridge_interfaces::msg::Float>::SharedPtr m_throttle_sub;
 };
