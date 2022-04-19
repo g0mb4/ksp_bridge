@@ -26,6 +26,8 @@ uint8 SPEED_MODE_TARGET = 2
 uint8 CONTROL_INPUT_MODE_ADDITIVE = 0
 uint8 CONTROL_INPUT_MODE_OVERRIDE = 1
 
+std_msgs/Header header
+
 uint8 source
 uint8 state
 bool sas
