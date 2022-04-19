@@ -25,18 +25,6 @@ private:
 
     void publish_data();
 
-    template <typename T>
-    T clamp(T val, T min, T max)
-    {
-        if (val < min) {
-            return min;
-        } else if (val > max) {
-            return max;
-        } else {
-            return val;
-        }
-    }
-
     struct NamedReferenceFrame {
         std::string name;
         krpc::services::SpaceCenter::ReferenceFrame refrence_frame;

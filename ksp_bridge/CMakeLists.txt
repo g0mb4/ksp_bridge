@@ -31,7 +31,8 @@ include_directories(include)
 
 add_executable(${PROJECT_NAME}
   src/ksp_bridge_node.cpp 
-  src/ksp_bridge.cpp 
+  src/ksp_bridge.cpp
+  src/utils.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}

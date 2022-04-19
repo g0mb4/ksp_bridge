@@ -42,6 +42,6 @@ geometry_msgs/Vector3 moment_of_inertia
 geometry_msgs/Inertia inertia       # from inertia_tensor
 geometry_msgs/Vector3 position
 geometry_msgs/Vector3 velocity
-geometry_msgs/Vector3 rotation
+geometry_msgs/Quaternion rotation
 geometry_msgs/Vector3 direction
 geometry_msgs/Vector3 angular_velocity

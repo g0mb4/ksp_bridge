@@ -1,4 +1,5 @@
 #include "ksp_bridge/ksp_bridge.hpp"
+#include "ksp_bridge/utils.hpp"
 
 #include <krpc/services/krpc.hpp>
 
@@ -130,14 +131,10 @@ bool KSPBridge::gather_data()
         m_vessel_data.vacuum_specific_impulse = m_vessel->vacuum_specific_impulse();
         m_vessel_data.kerbin_sea_level_specific_impulse = m_vessel->kerbin_sea_level_specific_impulse();
 
-        m_vessel_data.moment_of_inertia.x = std::get<0>(m_vessel->moment_of_inertia());
-        m_vessel_data.moment_of_inertia.x = std::get<1>(m_vessel->moment_of_inertia());
-        m_vessel_data.moment_of_inertia.x = std::get<2>(m_vessel->moment_of_inertia());
+        m_vessel_data.moment_of_inertia = tuple2vector3(m_vessel->moment_of_inertia());
 
         m_vessel_data.inertia.m = m_vessel->mass();
-        m_vessel_data.inertia.com.x = std::get<0>(m_vessel->position(m_refrence_frame.refrence_frame));
-        m_vessel_data.inertia.com.y = std::get<1>(m_vessel->position(m_refrence_frame.refrence_frame));
-        m_vessel_data.inertia.com.z = std::get<2>(m_vessel->position(m_refrence_frame.refrence_frame));
+        m_vessel_data.inertia.com = tuple2vector3(m_vessel->position(m_refrence_frame.refrence_frame));
         // TODO: check this
         m_vessel_data.inertia.ixx = m_vessel->inertia_tensor()[0];
         m_vessel_data.inertia.ixy = m_vessel->inertia_tensor()[1];
@@ -146,25 +143,11 @@ bool KSPBridge::gather_data()
         m_vessel_data.inertia.iyz = m_vessel->inertia_tensor()[4];
         m_vessel_data.inertia.izz = m_vessel->inertia_tensor()[5];
 
-        m_vessel_data.position.x = std::get<0>(m_vessel->position(m_refrence_frame.refrence_frame));
-        m_vessel_data.position.y = std::get<1>(m_vessel->position(m_refrence_frame.refrence_frame));
-        m_vessel_data.position.z = std::get<2>(m_vessel->position(m_refrence_frame.refrence_frame));
-
-        m_vessel_data.velocity.x = std::get<0>(m_vessel->velocity(m_refrence_frame.refrence_frame));
-        m_vessel_data.velocity.y = std::get<1>(m_vessel->velocity(m_refrence_frame.refrence_frame));
-        m_vessel_data.velocity.z = std::get<2>(m_vessel->velocity(m_refrence_frame.refrence_frame));
-
-        m_vessel_data.rotation.x = std::get<0>(m_vessel->rotation(m_refrence_frame.refrence_frame));
-        m_vessel_data.rotation.y = std::get<1>(m_vessel->rotation(m_refrence_frame.refrence_frame));
-        m_vessel_data.rotation.z = std::get<2>(m_vessel->rotation(m_refrence_frame.refrence_frame));
-
-        m_vessel_data.direction.x = std::get<0>(m_vessel->direction(m_refrence_frame.refrence_frame));
-        m_vessel_data.direction.y = std::get<1>(m_vessel->direction(m_refrence_frame.refrence_frame));
-        m_vessel_data.direction.z = std::get<2>(m_vessel->direction(m_refrence_frame.refrence_frame));
-
-        m_vessel_data.angular_velocity.x = std::get<0>(m_vessel->angular_velocity(m_refrence_frame.refrence_frame));
-        m_vessel_data.angular_velocity.y = std::get<1>(m_vessel->angular_velocity(m_refrence_frame.refrence_frame));
-        m_vessel_data.angular_velocity.z = std::get<2>(m_vessel->angular_velocity(m_refrence_frame.refrence_frame));
+        m_vessel_data.position = tuple2vector3(m_vessel->position(m_refrence_frame.refrence_frame));
+        m_vessel_data.velocity = tuple2vector3(m_vessel->velocity(m_refrence_frame.refrence_frame));
+        m_vessel_data.rotation = tuple2quaternion(m_vessel->rotation(m_refrence_frame.refrence_frame));
+        m_vessel_data.direction = tuple2vector3(m_vessel->direction(m_refrence_frame.refrence_frame));
+        m_vessel_data.angular_velocity = tuple2vector3(m_vessel->angular_velocity(m_refrence_frame.refrence_frame));
 
         m_flight_data.g_force = flight.g_force();
         m_flight_data.mean_altitude = flight.mean_altitude();
