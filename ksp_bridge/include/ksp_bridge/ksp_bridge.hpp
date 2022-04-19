@@ -6,6 +6,7 @@
 #include <ksp_bridge_interfaces/msg/control.hpp>
 #include <ksp_bridge_interfaces/msg/flight.hpp>
 #include <ksp_bridge_interfaces/msg/float.hpp>
+#include <ksp_bridge_interfaces/msg/part.hpp>
 #include <ksp_bridge_interfaces/msg/vessel.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -24,6 +25,7 @@ private:
     bool gather_vessel_data();
     bool gather_control_data();
     bool gather_flight_data();
+    bool gather_parts_data();
 
     void publish_data();
 
@@ -46,12 +48,14 @@ private:
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Vessel>::SharedPtr m_vessel_publisher;
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Control>::SharedPtr m_control_publisher;
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Flight>::SharedPtr m_flight_publisher;
+    std::vector<rclcpp::Publisher<ksp_bridge_interfaces::msg::Part>::SharedPtr> m_parts_publishers;
 
     rclcpp::TimerBase::SharedPtr m_publish_timer;
 
     ksp_bridge_interfaces::msg::Vessel m_vessel_data;
     ksp_bridge_interfaces::msg::Control m_control_data;
     ksp_bridge_interfaces::msg::Flight m_flight_data;
+    std::vector<ksp_bridge_interfaces::msg::Part> m_parts_data;
 
     rclcpp::Subscription<ksp_bridge_interfaces::msg::Float>::SharedPtr m_throttle_sub;
 };

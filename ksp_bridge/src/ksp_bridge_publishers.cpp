@@ -1,5 +1,6 @@
 #include "ksp_bridge/ksp_bridge.hpp"
 #include "ksp_bridge/utils.hpp"
+#include "ksp_bridge_interfaces/msg/resource.hpp"
 
 #include <krpc/services/krpc.hpp>
 
@@ -103,16 +104,136 @@ bool KSPBridge::gather_control_data()
 bool KSPBridge::gather_flight_data()
 {
     try {
-        auto flight = m_vessel->flight();
+        auto flight = m_vessel->flight(m_refrence_frame.refrence_frame);
+
+        m_flight_data.header.frame_id = m_refrence_frame.name;
+        m_flight_data.header.stamp = now();
 
         m_flight_data.g_force = flight.g_force();
         m_flight_data.mean_altitude = flight.mean_altitude();
         m_flight_data.surface_altitude = flight.surface_altitude();
         m_flight_data.bedrock_altitude = flight.bedrock_altitude();
-        m_flight_data.elevation = flight.elevation();
-        m_flight_data.latitude = flight.latitude();
-        m_flight_data.longitude = flight.longitude();
+        m_flight_data.velocity = tuple2vector3(flight.velocity());
+        m_flight_data.speed = flight.speed();
+        m_flight_data.horizontal_speed = flight.horizontal_speed();
+        m_flight_data.vertical_speed = flight.vertical_speed();
+        m_flight_data.center_of_mass = tuple2vector3(flight.center_of_mass());
+        m_flight_data.rotation = tuple2quaternion(flight.rotation());
+        m_flight_data.direction = tuple2vector3(flight.direction());
+        m_flight_data.pitch = flight.pitch();
+        m_flight_data.heading = flight.heading();
+        m_flight_data.roll = flight.roll();
+        m_flight_data.prograde = tuple2vector3(flight.prograde());
+        m_flight_data.retrograde = tuple2vector3(flight.retrograde());
+        m_flight_data.normal = tuple2vector3(flight.normal());
+        m_flight_data.anti_normal = tuple2vector3(flight.anti_normal());
+        m_flight_data.radial = tuple2vector3(flight.radial());
+        m_flight_data.anti_radial = tuple2vector3(flight.anti_radial());
+        m_flight_data.atmosphere_density = flight.atmosphere_density();
+        m_flight_data.dynamic_pressure = flight.dynamic_pressure();
+        m_flight_data.static_pressure = flight.static_pressure();
+        m_flight_data.static_pressure_at_msl = flight.static_pressure_at_msl();
+        m_flight_data.aerodynamic_force = tuple2vector3(flight.aerodynamic_force());
+        m_flight_data.lift = tuple2vector3(flight.lift());
+        m_flight_data.drag = tuple2vector3(flight.drag());
+        m_flight_data.speed_of_sound = flight.speed_of_sound();
+        m_flight_data.mach = flight.mach();
+        m_flight_data.true_air_speed = flight.true_air_speed();
+        m_flight_data.equivalent_air_speed = flight.equivalent_air_speed();
+        m_flight_data.terminal_velocity = flight.terminal_velocity();
+        m_flight_data.angle_of_attack = flight.angle_of_attack();
+        m_flight_data.sideslip_angle = flight.sideslip_angle();
+        m_flight_data.total_air_temperature = flight.total_air_temperature();
+        m_flight_data.static_air_temperature = flight.static_air_temperature();
+    } catch (const std::exception& ex) {
+        RCLCPP_ERROR(get_logger(), "%s", ex.what());
+        return false;
+    }
 
+    return true;
+}
+
+bool KSPBridge::gather_parts_data()
+{
+    try {
+        auto parts = m_vessel->parts().all();
+
+        for (uint32_t i = 0; i < parts.size(); ++i) {
+            try {
+                auto* part_data = &m_parts_data[i];
+                auto* part = &parts[i];
+
+                // TODO: vessel? needs tf
+                part_data->header.frame_id = m_refrence_frame.name;
+                part_data->header.stamp = now();
+
+                part_data->name = part->name();
+                //part_data->title = part->title();
+                //part_data->tag = part->tag();
+                part_data->highlighted = part->highlighted();
+                part_data->highlight_color = tuple2vector3(part->highlight_color());
+                part_data->cost = part->cost();
+                part_data->axially_attached = part->axially_attached();
+                part_data->radially_attached = part->radially_attached();
+                part_data->stage = part->stage();
+                part_data->decouple_stage = part->decouple_stage();
+                part_data->massless = part->massless();
+                part_data->mass = part->mass();
+                part_data->dry_mass = part->dry_mass();
+                part_data->shielded = part->shielded();
+                part_data->dynamic_pressure = part->dynamic_pressure();
+                part_data->impact_tolerance = part->impact_tolerance();
+                part_data->temperature = part->temperature();
+                part_data->skin_temperature = part->skin_temperature();
+                part_data->max_temperature = part->max_temperature();
+                part_data->max_skin_temperature = part->max_skin_temperature();
+                part_data->thermal_mass = part->thermal_mass();
+                part_data->thermal_skin_mass = part->thermal_skin_mass();
+                part_data->thermal_resource_mass = part->thermal_resource_mass();
+                part_data->thermal_conduction_flux = part->thermal_conduction_flux();
+                part_data->thermal_convection_flux = part->thermal_convection_flux();
+                part_data->thermal_radiation_flux = part->thermal_radiation_flux();
+                part_data->thermal_internal_flux = part->thermal_internal_flux();
+                part_data->thermal_skin_to_internal_flux = part->thermal_skin_to_internal_flux();
+
+                auto resources = part->resources().all();
+                for (auto& resource : resources) {
+                    ksp_bridge_interfaces::msg::Resource r;
+
+                    r.name = resource.name();
+                    r.amount = resource.amount();
+                    r.max = resource.max();
+                    r.density = resource.density();
+                    r.flow_mode = (uint8_t)resource.flow_mode();
+                    r.enabled = resource.enabled();
+
+                    part_data->resources.emplace_back(r);
+                }
+
+                part_data->crossfeed = part->crossfeed();
+                part_data->is_fuel_line = part->is_fuel_line();
+                // TODO: reference frame of the vessel ???
+                part_data->position = tuple2vector3(part->position(m_refrence_frame.refrence_frame));
+                part_data->center_of_mass = tuple2vector3(part->center_of_mass(m_refrence_frame.refrence_frame));
+                part_data->direction = tuple2vector3(part->direction(m_refrence_frame.refrence_frame));
+                part_data->velocity = tuple2vector3(part->velocity(m_refrence_frame.refrence_frame));
+                part_data->rotation = tuple2quaternion(part->rotation(m_refrence_frame.refrence_frame));
+                part_data->moment_of_inertia = tuple2vector3(part->moment_of_inertia());
+
+                part_data->inertia.m = part->mass();
+                part_data->inertia.com = tuple2vector3(part->position(m_refrence_frame.refrence_frame));
+                // TODO: check this
+                part_data->inertia.ixx = part->inertia_tensor()[0];
+                part_data->inertia.ixy = part->inertia_tensor()[1];
+                part_data->inertia.ixz = part->inertia_tensor()[2];
+                part_data->inertia.iyy = part->inertia_tensor()[3];
+                part_data->inertia.iyz = part->inertia_tensor()[4];
+                part_data->inertia.izz = part->inertia_tensor()[5];
+            } catch (const std::exception& ex) {
+                RCLCPP_ERROR(get_logger(), "part%d: %s", i, ex.what());
+                continue;
+            }
+        }
     } catch (const std::exception& ex) {
         RCLCPP_ERROR(get_logger(), "%s", ex.what());
         return false;

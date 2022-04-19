@@ -1,6 +1,6 @@
 # https://krpc.github.io/krpc/cpp/api/space-center/flight.html
 
-# TODO: implement all
+std_msgs/Header header
 
 float32 g_force
 float64 mean_altitude
@@ -9,3 +9,35 @@ float64 bedrock_altitude
 float64 elevation
 float64 latitude
 float64 longitude
+geometry_msgs/Vector3 velocity
+float64 speed
+float64 horizontal_speed
+float64 vertical_speed
+geometry_msgs/Vector3 center_of_mass
+geometry_msgs/Quaternion rotation
+geometry_msgs/Vector3 direction
+float64 pitch
+float64 heading
+float64 roll
+geometry_msgs/Vector3 prograde
+geometry_msgs/Vector3 retrograde
+geometry_msgs/Vector3 normal
+geometry_msgs/Vector3 anti_normal
+geometry_msgs/Vector3 radial
+geometry_msgs/Vector3 anti_radial
+float32 atmosphere_density
+float32 dynamic_pressure
+float32 static_pressure
+float32 static_pressure_at_msl
+geometry_msgs/Vector3 aerodynamic_force
+geometry_msgs/Vector3 lift
+geometry_msgs/Vector3 drag
+float32 speed_of_sound
+float32 mach
+float32 true_air_speed
+float32 equivalent_air_speed
+float32 terminal_velocity
+float32 angle_of_attack
+float32 sideslip_angle
+float32 total_air_temperature
+float32 static_air_temperature

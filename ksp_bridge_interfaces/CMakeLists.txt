@@ -19,6 +19,9 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/Vessel.msg
   msg/Control.msg
   msg/Flight.msg
+  msg/Resource.msg
+  msg/Part.msg
+  msg/Parts.msg
   msg/Float.msg
   DEPENDENCIES std_msgs geometry_msgs
 )
