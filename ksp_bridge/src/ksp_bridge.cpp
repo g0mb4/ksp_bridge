@@ -74,6 +74,15 @@ void KSPBridge::find_active_vessel()
     }
 
     RCLCPP_INFO(get_logger(), "Vessel found: %s", m_vessel->name().c_str());
+    m_celestial_bodies = m_space_center->bodies();
+
+    try {
+        m_refrence_frame.name = "kerbin";
+        m_refrence_frame.refrence_frame = m_celestial_bodies["Kerbin"].reference_frame();
+    } catch (const std::exception& ex) {
+        RCLCPP_ERROR(get_logger(), "%s", ex.what());
+    }
+
     init_communication();
 }
 
@@ -99,10 +108,63 @@ bool KSPBridge::gather_data()
         auto flight = m_vessel->flight();
         auto control = m_vessel->control();
 
+        m_vessel_data.header.frame_id = m_refrence_frame.name;
+        m_vessel_data.header.stamp = now();
         m_vessel_data.name = m_vessel->name();
         m_vessel_data.type = (uint8_t)m_vessel->type();
+        m_vessel_data.situation = (uint8_t)m_vessel->situation();
+        m_vessel_data.recoverable = m_vessel->recoverable();
+
+        m_vessel_data.met = m_vessel->met();
+        m_vessel_data.biome = m_vessel->biome();
+        m_vessel_data.crew_capacity = m_vessel->crew_capacity();
+        m_vessel_data.crew_count = m_vessel->crew_count();
         m_vessel_data.mass = m_vessel->mass();
         m_vessel_data.dry_mass = m_vessel->dry_mass();
+
+        m_vessel_data.thrust = m_vessel->thrust();
+        m_vessel_data.available_thrust = m_vessel->available_thrust();
+        m_vessel_data.max_thrust = m_vessel->max_thrust();
+        m_vessel_data.max_vacuum_thrust = m_vessel->max_vacuum_thrust();
+        m_vessel_data.specific_impulse = m_vessel->specific_impulse();
+        m_vessel_data.vacuum_specific_impulse = m_vessel->vacuum_specific_impulse();
+        m_vessel_data.kerbin_sea_level_specific_impulse = m_vessel->kerbin_sea_level_specific_impulse();
+
+        m_vessel_data.moment_of_inertia.x = std::get<0>(m_vessel->moment_of_inertia());
+        m_vessel_data.moment_of_inertia.x = std::get<1>(m_vessel->moment_of_inertia());
+        m_vessel_data.moment_of_inertia.x = std::get<2>(m_vessel->moment_of_inertia());
+
+        m_vessel_data.inertia.m = m_vessel->mass();
+        m_vessel_data.inertia.com.x = std::get<0>(m_vessel->position(m_refrence_frame.refrence_frame));
+        m_vessel_data.inertia.com.y = std::get<1>(m_vessel->position(m_refrence_frame.refrence_frame));
+        m_vessel_data.inertia.com.z = std::get<2>(m_vessel->position(m_refrence_frame.refrence_frame));
+        // TODO: check this
+        m_vessel_data.inertia.ixx = m_vessel->inertia_tensor()[0];
+        m_vessel_data.inertia.ixy = m_vessel->inertia_tensor()[1];
+        m_vessel_data.inertia.ixz = m_vessel->inertia_tensor()[2];
+        m_vessel_data.inertia.iyy = m_vessel->inertia_tensor()[3];
+        m_vessel_data.inertia.iyz = m_vessel->inertia_tensor()[4];
+        m_vessel_data.inertia.izz = m_vessel->inertia_tensor()[5];
+
+        m_vessel_data.position.x = std::get<0>(m_vessel->position(m_refrence_frame.refrence_frame));
+        m_vessel_data.position.y = std::get<1>(m_vessel->position(m_refrence_frame.refrence_frame));
+        m_vessel_data.position.z = std::get<2>(m_vessel->position(m_refrence_frame.refrence_frame));
+
+        m_vessel_data.velocity.x = std::get<0>(m_vessel->velocity(m_refrence_frame.refrence_frame));
+        m_vessel_data.velocity.y = std::get<1>(m_vessel->velocity(m_refrence_frame.refrence_frame));
+        m_vessel_data.velocity.z = std::get<2>(m_vessel->velocity(m_refrence_frame.refrence_frame));
+
+        m_vessel_data.rotation.x = std::get<0>(m_vessel->rotation(m_refrence_frame.refrence_frame));
+        m_vessel_data.rotation.y = std::get<1>(m_vessel->rotation(m_refrence_frame.refrence_frame));
+        m_vessel_data.rotation.z = std::get<2>(m_vessel->rotation(m_refrence_frame.refrence_frame));
+
+        m_vessel_data.direction.x = std::get<0>(m_vessel->direction(m_refrence_frame.refrence_frame));
+        m_vessel_data.direction.y = std::get<1>(m_vessel->direction(m_refrence_frame.refrence_frame));
+        m_vessel_data.direction.z = std::get<2>(m_vessel->direction(m_refrence_frame.refrence_frame));
+
+        m_vessel_data.angular_velocity.x = std::get<0>(m_vessel->angular_velocity(m_refrence_frame.refrence_frame));
+        m_vessel_data.angular_velocity.y = std::get<1>(m_vessel->angular_velocity(m_refrence_frame.refrence_frame));
+        m_vessel_data.angular_velocity.z = std::get<2>(m_vessel->angular_velocity(m_refrence_frame.refrence_frame));
 
         m_flight_data.g_force = flight.g_force();
         m_flight_data.mean_altitude = flight.mean_altitude();
@@ -112,6 +174,8 @@ bool KSPBridge::gather_data()
         m_flight_data.latitude = flight.latitude();
         m_flight_data.longitude = flight.longitude();
 
+        m_control_data.header.frame_id = m_refrence_frame.name;
+        m_control_data.header.stamp = now();
         m_control_data.source = (uint8_t)control.source();
         m_control_data.state = (uint8_t)control.state();
         m_control_data.sas = control.sas();

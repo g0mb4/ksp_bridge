@@ -37,6 +37,11 @@ private:
         }
     }
 
+    struct NamedReferenceFrame {
+        std::string name;
+        krpc::services::SpaceCenter::ReferenceFrame refrence_frame;
+    };
+
     void throttle_sub(const ksp_bridge_interfaces::msg::Float::SharedPtr msg);
 
     std::unique_ptr<krpc::Client> m_ksp_client;
@@ -44,6 +49,9 @@ private:
     std::unique_ptr<krpc::services::SpaceCenter> m_space_center;
 
     std::unique_ptr<krpc::services::SpaceCenter::Vessel> m_vessel;
+    NamedReferenceFrame m_refrence_frame;
+
+    std::map<std::string, krpc::services::SpaceCenter::CelestialBody> m_celestial_bodies;
 
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Vessel>::SharedPtr m_vessel_publisher;
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Control>::SharedPtr m_control_publisher;

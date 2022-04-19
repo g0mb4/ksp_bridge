@@ -20,7 +20,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/Control.msg
   msg/Flight.msg
   msg/Float.msg
+  DEPENDENCIES std_msgs geometry_msgs
 )
-
 
 ament_package()

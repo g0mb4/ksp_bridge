@@ -36,6 +36,8 @@ add_executable(${PROJECT_NAME}
 
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
+  std_msgs
+  geometry_msgs
   ksp_bridge_interfaces
 )
 
