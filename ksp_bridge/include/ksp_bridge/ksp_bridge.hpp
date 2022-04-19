@@ -21,7 +21,9 @@ private:
     void find_active_vessel();
     void init_communication();
 
-    bool gather_data();
+    bool gather_vessel_data();
+    bool gather_control_data();
+    bool gather_flight_data();
 
     void publish_data();
 
