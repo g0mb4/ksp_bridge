@@ -167,9 +167,14 @@ bool KSPBridge::gather_parts_data()
             try {
                 auto part_data = ksp_bridge_interfaces::msg::Part();
 
+                int part_count = std::count_if(m_parts_data.parts.begin(), m_parts_data.parts.end(),
+                    [&](const ksp_bridge_interfaces::msg::Part& p) {
+                        return p.title == part.title();
+                    });
+
                 part_data.name = part.name();
                 part_data.title = part.title();
-                //part_data.tag = part.tag();
+                part_data.tag = "#" + std::to_string(part_count);
                 part_data.highlighted = part.highlighted();
                 part_data.highlight_color = tuple2vector3(part.highlight_color());
                 part_data.cost = part.cost();

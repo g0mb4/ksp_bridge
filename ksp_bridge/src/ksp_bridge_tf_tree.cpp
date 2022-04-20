@@ -42,7 +42,7 @@ void KSPBridge::send_tf_tree()
         geometry_msgs::msg::TransformStamped t;
         t.header.stamp = now();
         t.header.frame_id = "vessel";
-        t.child_frame_id = part.name;
+        t.child_frame_id = part.title + part.tag;
 
         t.transform.translation.x = part.position.x;
         t.transform.translation.y = part.position.y;
