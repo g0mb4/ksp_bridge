@@ -7,6 +7,7 @@
 #include <ksp_bridge_interfaces/msg/control.hpp>
 #include <ksp_bridge_interfaces/msg/flight.hpp>
 #include <ksp_bridge_interfaces/msg/float.hpp>
+#include <ksp_bridge_interfaces/msg/orbit.hpp>
 #include <ksp_bridge_interfaces/msg/parts.hpp>
 #include <ksp_bridge_interfaces/msg/vessel.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -29,6 +30,7 @@ private:
     bool gather_flight_data();
     bool gather_parts_data();
     bool gather_celestial_bodies_data();
+    bool gather_orbit_data();
 
     void send_tf_tree();
 
@@ -41,9 +43,13 @@ private:
 
     void throttle_sub(const ksp_bridge_interfaces::msg::Float::SharedPtr msg);
 
+    bool change_reference_frame(const std::string& name);
+
     std::unique_ptr<krpc::Client> m_ksp_client;
     std::unique_ptr<krpc::services::KRPC> m_krpc;
     std::unique_ptr<krpc::services::SpaceCenter> m_space_center;
+
+    std::vector<std::string> m_param_celestial_bodies;
 
     std::unique_ptr<krpc::services::SpaceCenter::Vessel> m_vessel;
     NamedReferenceFrame m_refrence_frame;
@@ -55,6 +61,7 @@ private:
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Flight>::SharedPtr m_flight_publisher;
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Parts>::SharedPtr m_parts_publisher;
     rclcpp::Publisher<ksp_bridge_interfaces::msg::CelestialBodies>::SharedPtr m_celestial_bodies_publisher;
+    rclcpp::Publisher<ksp_bridge_interfaces::msg::Orbit>::SharedPtr m_orbit_publisher;
 
     std::unique_ptr<tf2_ros::TransformBroadcaster> m_tf_broadcaster;
 
@@ -65,6 +72,7 @@ private:
     ksp_bridge_interfaces::msg::Flight m_flight_data;
     ksp_bridge_interfaces::msg::Parts m_parts_data;
     ksp_bridge_interfaces::msg::CelestialBodies m_celestial_bodies_data;
+    ksp_bridge_interfaces::msg::Orbit m_orbit_data;
 
     rclcpp::Subscription<ksp_bridge_interfaces::msg::Float>::SharedPtr m_throttle_sub;
 };

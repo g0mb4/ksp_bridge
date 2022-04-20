@@ -1,13 +1,19 @@
-#include "ksp_bridge/ksp_bridge.hpp"
-#include "ksp_bridge/utils.hpp"
-
+#include <cctype>
 #include <krpc/services/krpc.hpp>
+#include <ksp_bridge/ksp_bridge.hpp>
+#include <ksp_bridge/utils.hpp>
+#include <string>
+
+#include <stdlib.h>
 
 KSPBridge::KSPBridge()
     : rclcpp::Node("ksp_bridge")
 {
     declare_parameter<int64_t>("update_interval_ms", 100);
+    declare_parameter<std::vector<std::string>>("celestial_bodies", { "Sun", "Kerbin", "Mun" });
+
     int64_t update_interval_ms = get_parameter("update_interval_ms").as_int();
+    m_param_celestial_bodies = get_parameter("celestial_bodies").as_string_array();
 
     connect();
     find_active_vessel();
@@ -75,16 +81,55 @@ void KSPBridge::find_active_vessel()
     }
 
     RCLCPP_INFO(get_logger(), "Vessel found: %s", m_vessel->name().c_str());
-    m_celestial_bodies = m_space_center->bodies();
+    auto bodies = m_space_center->bodies();
 
-    try {
-        m_refrence_frame.name = "kerbin";
-        m_refrence_frame.refrence_frame = m_celestial_bodies["Kerbin"].reference_frame();
-    } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+    for (auto it = bodies.begin(); it != bodies.end(); ++it) {
+        auto name = it->second.name();
+
+        auto it_find = std::find(m_param_celestial_bodies.begin(), m_param_celestial_bodies.end(), name);
+
+        if (it_find != m_param_celestial_bodies.end()) {
+            m_celestial_bodies[name] = it->second;
+        }
+    }
+
+    auto it = m_celestial_bodies.find("Sun");
+    if (it == m_celestial_bodies.end()) {
+        RCLCPP_FATAL(get_logger(), "Sun is a required celestial body.");
+        exit(1);
+    }
+
+    if (!change_reference_frame("kerbin")) {
+        RCLCPP_FATAL(get_logger(), "Unable to change the reference frame to kerbin.");
+        exit(1);
     }
 
     init_communication();
+}
+
+bool KSPBridge::change_reference_frame(const std::string& name)
+{
+    if (name.size() < 1) {
+        return false;
+    }
+
+    if (name == "vessel") {
+        m_refrence_frame.name = "vessel";
+        m_refrence_frame.refrence_frame = m_vessel->reference_frame();
+
+        return true;
+    }
+
+    auto cap_name = name;
+    cap_name[0] = std::toupper(name[0]);
+    auto it = m_celestial_bodies.find(cap_name);
+    if (it != m_celestial_bodies.end()) {
+        m_refrence_frame.name = name;
+        m_refrence_frame.refrence_frame = it->second.reference_frame();
+        return true;
+    }
+
+    return false;
 }
 
 void KSPBridge::init_communication()
@@ -94,6 +139,7 @@ void KSPBridge::init_communication()
     m_flight_publisher = create_publisher<ksp_bridge_interfaces::msg::Flight>("/vessel/flight", 10);
     m_parts_publisher = create_publisher<ksp_bridge_interfaces::msg::Parts>("/vessel/parts", 10);
     m_celestial_bodies_publisher = create_publisher<ksp_bridge_interfaces::msg::CelestialBodies>("/celestial_bodies", 10);
+    m_orbit_publisher = create_publisher<ksp_bridge_interfaces::msg::Orbit>("/vessel/orbit", 10);
 
     m_tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
@@ -129,6 +175,10 @@ void KSPBridge::publish_data()
 
     if (gather_celestial_bodies_data()) {
         m_celestial_bodies_publisher->publish(m_celestial_bodies_data);
+    }
+
+    if (gather_orbit_data()) {
+        m_orbit_publisher->publish(m_orbit_data);
     }
 
     send_tf_tree();

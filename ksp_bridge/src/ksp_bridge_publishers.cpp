@@ -157,6 +157,8 @@ bool KSPBridge::gather_parts_data()
 {
     try {
         auto parts = m_vessel->parts().all();
+
+        // FIXME: do not reallocate
         m_parts_data.parts.clear();
 
         m_parts_data.header.frame_id = "vessel";
@@ -251,6 +253,7 @@ bool KSPBridge::gather_parts_data()
 bool KSPBridge::gather_celestial_bodies_data()
 {
     try {
+        // FIXME: do not reallocate
         m_celestial_bodies_data.bodies.clear();
 
         m_celestial_bodies_data.header.frame_id = m_refrence_frame.name;
@@ -285,6 +288,42 @@ bool KSPBridge::gather_celestial_bodies_data()
 
             m_celestial_bodies_data.bodies.emplace_back(body_data);
         }
+    } catch (const std::exception& ex) {
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+        return false;
+    }
+
+    return true;
+}
+
+bool KSPBridge::gather_orbit_data()
+{
+    try {
+        auto orbit = m_vessel->orbit();
+
+        m_orbit_data.body = orbit.body().name();
+        m_orbit_data.apoapsis = orbit.apoapsis();
+        m_orbit_data.periapsis = orbit.periapsis();
+        m_orbit_data.apoapsis_altitude = orbit.apoapsis_altitude();
+        m_orbit_data.periapsis_altitude = orbit.periapsis_altitude();
+        m_orbit_data.semi_major_axis = orbit.semi_major_axis();
+        m_orbit_data.semi_minor_axis = orbit.semi_minor_axis();
+        m_orbit_data.radius = orbit.radius();
+        m_orbit_data.speed = orbit.speed();
+        m_orbit_data.period = orbit.period();
+        m_orbit_data.time_to_apoapsis = orbit.time_to_apoapsis();
+        m_orbit_data.time_to_periapsis = orbit.time_to_periapsis();
+        m_orbit_data.eccentricity = orbit.eccentricity();
+        m_orbit_data.inclination = orbit.inclination();
+        m_orbit_data.longitude_of_ascending_node = orbit.longitude_of_ascending_node();
+        m_orbit_data.argument_of_periapsis = orbit.argument_of_periapsis();
+        m_orbit_data.mean_anomaly_at_epoch = orbit.mean_anomaly_at_epoch();
+        m_orbit_data.epoch = orbit.epoch();
+        m_orbit_data.mean_anomaly = orbit.mean_anomaly();
+        m_orbit_data.eccentric_anomaly = orbit.eccentric_anomaly();
+        m_orbit_data.true_anomaly = orbit.true_anomaly();
+        m_orbit_data.orbital_speed = orbit.orbital_speed();
+        m_orbit_data.time_to_soi_change = orbit.time_to_soi_change();
     } catch (const std::exception& ex) {
         RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
         return false;
