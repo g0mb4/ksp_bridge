@@ -92,15 +92,7 @@ void KSPBridge::init_communication()
     m_vessel_publisher = create_publisher<ksp_bridge_interfaces::msg::Vessel>("/vessel", 10);
     m_control_publisher = create_publisher<ksp_bridge_interfaces::msg::Control>("/vessel/control", 10);
     m_flight_publisher = create_publisher<ksp_bridge_interfaces::msg::Flight>("/vessel/flight", 10);
-
-    auto parts = m_vessel->parts().all();
-
-    m_parts_publishers.clear();
-    for (uint32_t i = 0; i < parts.size(); ++i) {
-        char name[64];
-        snprintf(name, sizeof(name), "vessel/part%d", i);
-        m_parts_publishers.emplace_back(create_publisher<ksp_bridge_interfaces::msg::Part>(name, 10));
-    }
+    m_parts_publisher = create_publisher<ksp_bridge_interfaces::msg::Parts>("/vessel/parts", 10);
 
     m_throttle_sub = create_subscription<ksp_bridge_interfaces::msg::Float>(
         "/throttle",
@@ -129,8 +121,6 @@ void KSPBridge::publish_data()
     }
 
     if (gather_parts_data()) {
-        for (uint32_t i = 0; i < m_parts_data.size(); ++i) {
-            m_parts_publishers[i]->publish(m_parts_data[i]);
-        }
+        m_parts_publisher->publish(m_parts_data);
     }
 }

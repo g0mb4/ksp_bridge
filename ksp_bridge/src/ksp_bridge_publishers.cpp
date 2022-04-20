@@ -157,46 +157,46 @@ bool KSPBridge::gather_parts_data()
 {
     try {
         auto parts = m_vessel->parts().all();
+        m_parts_data.parts.clear();
 
-        for (uint32_t i = 0; i < parts.size(); ++i) {
+        // note: vessel's frame?
+        m_parts_data.header.frame_id = m_refrence_frame.name;
+        m_parts_data.header.stamp = now();
+
+        for (auto& part : parts) {
             try {
-                auto* part_data = &m_parts_data[i];
-                auto* part = &parts[i];
+                auto part_data = ksp_bridge_interfaces::msg::Part();
 
-                // TODO: vessel? needs tf
-                part_data->header.frame_id = m_refrence_frame.name;
-                part_data->header.stamp = now();
+                part_data.name = part.name();
+                //part_data.title = part.title();
+                //part_data.tag = part.tag();
+                part_data.highlighted = part.highlighted();
+                part_data.highlight_color = tuple2vector3(part.highlight_color());
+                part_data.cost = part.cost();
+                part_data.axially_attached = part.axially_attached();
+                part_data.radially_attached = part.radially_attached();
+                part_data.stage = part.stage();
+                part_data.decouple_stage = part.decouple_stage();
+                part_data.massless = part.massless();
+                part_data.mass = part.mass();
+                part_data.dry_mass = part.dry_mass();
+                part_data.shielded = part.shielded();
+                part_data.dynamic_pressure = part.dynamic_pressure();
+                part_data.impact_tolerance = part.impact_tolerance();
+                part_data.temperature = part.temperature();
+                part_data.skin_temperature = part.skin_temperature();
+                part_data.max_temperature = part.max_temperature();
+                part_data.max_skin_temperature = part.max_skin_temperature();
+                part_data.thermal_mass = part.thermal_mass();
+                part_data.thermal_skin_mass = part.thermal_skin_mass();
+                part_data.thermal_resource_mass = part.thermal_resource_mass();
+                part_data.thermal_conduction_flux = part.thermal_conduction_flux();
+                part_data.thermal_convection_flux = part.thermal_convection_flux();
+                part_data.thermal_radiation_flux = part.thermal_radiation_flux();
+                part_data.thermal_internal_flux = part.thermal_internal_flux();
+                part_data.thermal_skin_to_internal_flux = part.thermal_skin_to_internal_flux();
 
-                part_data->name = part->name();
-                //part_data->title = part->title();
-                //part_data->tag = part->tag();
-                part_data->highlighted = part->highlighted();
-                part_data->highlight_color = tuple2vector3(part->highlight_color());
-                part_data->cost = part->cost();
-                part_data->axially_attached = part->axially_attached();
-                part_data->radially_attached = part->radially_attached();
-                part_data->stage = part->stage();
-                part_data->decouple_stage = part->decouple_stage();
-                part_data->massless = part->massless();
-                part_data->mass = part->mass();
-                part_data->dry_mass = part->dry_mass();
-                part_data->shielded = part->shielded();
-                part_data->dynamic_pressure = part->dynamic_pressure();
-                part_data->impact_tolerance = part->impact_tolerance();
-                part_data->temperature = part->temperature();
-                part_data->skin_temperature = part->skin_temperature();
-                part_data->max_temperature = part->max_temperature();
-                part_data->max_skin_temperature = part->max_skin_temperature();
-                part_data->thermal_mass = part->thermal_mass();
-                part_data->thermal_skin_mass = part->thermal_skin_mass();
-                part_data->thermal_resource_mass = part->thermal_resource_mass();
-                part_data->thermal_conduction_flux = part->thermal_conduction_flux();
-                part_data->thermal_convection_flux = part->thermal_convection_flux();
-                part_data->thermal_radiation_flux = part->thermal_radiation_flux();
-                part_data->thermal_internal_flux = part->thermal_internal_flux();
-                part_data->thermal_skin_to_internal_flux = part->thermal_skin_to_internal_flux();
-
-                auto resources = part->resources().all();
+                auto resources = part.resources().all();
                 for (auto& resource : resources) {
                     ksp_bridge_interfaces::msg::Resource r;
 
@@ -207,30 +207,32 @@ bool KSPBridge::gather_parts_data()
                     r.flow_mode = (uint8_t)resource.flow_mode();
                     r.enabled = resource.enabled();
 
-                    part_data->resources.emplace_back(r);
+                    part_data.resources.emplace_back(r);
                 }
 
-                part_data->crossfeed = part->crossfeed();
-                part_data->is_fuel_line = part->is_fuel_line();
+                part_data.crossfeed = part.crossfeed();
+                part_data.is_fuel_line = part.is_fuel_line();
                 // TODO: reference frame of the vessel ???
-                part_data->position = tuple2vector3(part->position(m_refrence_frame.refrence_frame));
-                part_data->center_of_mass = tuple2vector3(part->center_of_mass(m_refrence_frame.refrence_frame));
-                part_data->direction = tuple2vector3(part->direction(m_refrence_frame.refrence_frame));
-                part_data->velocity = tuple2vector3(part->velocity(m_refrence_frame.refrence_frame));
-                part_data->rotation = tuple2quaternion(part->rotation(m_refrence_frame.refrence_frame));
-                part_data->moment_of_inertia = tuple2vector3(part->moment_of_inertia());
+                part_data.position = tuple2vector3(part.position(m_refrence_frame.refrence_frame));
+                part_data.center_of_mass = tuple2vector3(part.center_of_mass(m_refrence_frame.refrence_frame));
+                part_data.direction = tuple2vector3(part.direction(m_refrence_frame.refrence_frame));
+                part_data.velocity = tuple2vector3(part.velocity(m_refrence_frame.refrence_frame));
+                part_data.rotation = tuple2quaternion(part.rotation(m_refrence_frame.refrence_frame));
+                part_data.moment_of_inertia = tuple2vector3(part.moment_of_inertia());
 
-                part_data->inertia.m = part->mass();
-                part_data->inertia.com = tuple2vector3(part->position(m_refrence_frame.refrence_frame));
+                part_data.inertia.m = part.mass();
+                part_data.inertia.com = tuple2vector3(part.position(m_refrence_frame.refrence_frame));
                 // TODO: check this
-                part_data->inertia.ixx = part->inertia_tensor()[0];
-                part_data->inertia.ixy = part->inertia_tensor()[1];
-                part_data->inertia.ixz = part->inertia_tensor()[2];
-                part_data->inertia.iyy = part->inertia_tensor()[3];
-                part_data->inertia.iyz = part->inertia_tensor()[4];
-                part_data->inertia.izz = part->inertia_tensor()[5];
+                part_data.inertia.ixx = part.inertia_tensor()[0];
+                part_data.inertia.ixy = part.inertia_tensor()[1];
+                part_data.inertia.ixz = part.inertia_tensor()[2];
+                part_data.inertia.iyy = part.inertia_tensor()[3];
+                part_data.inertia.iyz = part.inertia_tensor()[4];
+                part_data.inertia.izz = part.inertia_tensor()[5];
+
+                m_parts_data.parts.emplace_back(part_data);
             } catch (const std::exception& ex) {
-                RCLCPP_ERROR(get_logger(), "part%d: %s", i, ex.what());
+                RCLCPP_ERROR(get_logger(), "%s", ex.what());
                 continue;
             }
         }
