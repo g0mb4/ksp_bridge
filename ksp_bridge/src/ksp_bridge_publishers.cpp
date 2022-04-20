@@ -1,8 +1,8 @@
-#include "ksp_bridge/ksp_bridge.hpp"
-#include "ksp_bridge/utils.hpp"
-#include "ksp_bridge_interfaces/msg/resource.hpp"
-
 #include <krpc/services/krpc.hpp>
+#include <ksp_bridge/ksp_bridge.hpp>
+#include <ksp_bridge/utils.hpp>
+#include <ksp_bridge_interfaces/msg/celestial_body.hpp>
+#include <ksp_bridge_interfaces/msg/resource.hpp>
 
 bool KSPBridge::gather_vessel_data()
 {
@@ -217,7 +217,6 @@ bool KSPBridge::gather_parts_data()
 
                 part_data.crossfeed = part.crossfeed();
                 part_data.is_fuel_line = part.is_fuel_line();
-                // TODO: reference frame of the vessel ???
                 part_data.position = tuple2vector3(part.position(vessel_rf));
                 part_data.center_of_mass = tuple2vector3(part.center_of_mass(vessel_rf));
                 part_data.direction = tuple2vector3(part.direction(vessel_rf));
@@ -240,6 +239,51 @@ bool KSPBridge::gather_parts_data()
                 RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
                 continue;
             }
+        }
+    } catch (const std::exception& ex) {
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+        return false;
+    }
+
+    return true;
+}
+
+bool KSPBridge::gather_celestial_bodies_data()
+{
+    try {
+        m_celestial_bodies_data.bodies.clear();
+
+        m_celestial_bodies_data.header.frame_id = m_refrence_frame.name;
+        m_celestial_bodies_data.header.stamp = now();
+
+        for (auto it = m_celestial_bodies.begin(); it != m_celestial_bodies.end(); ++it) {
+            auto body = it->second;
+            ksp_bridge_interfaces::msg::CelestialBody body_data;
+
+            body_data.name = body.name();
+            body_data.mass = body.mass();
+            body_data.gravitational_parameter = body.gravitational_parameter();
+            body_data.surface_gravity = body.surface_gravity();
+            body_data.rotational_period = body.rotational_period();
+            body_data.rotational_speed = body.rotational_speed();
+            body_data.rotation_angle = body.rotation_angle();
+            body_data.initial_rotation = body.initial_rotation();
+            body_data.equatorial_radius = body.equatorial_radius();
+            body_data.sphere_of_influence = body.sphere_of_influence();
+            body_data.has_atmosphere = body.has_atmosphere();
+            body_data.atmosphere_depth = body.atmosphere_depth();
+            body_data.has_atmospheric_oxygen = body.has_atmospheric_oxygen();
+            body_data.flying_high_altitude_threshold = body.flying_high_altitude_threshold();
+            body_data.space_high_altitude_threshold = body.space_high_altitude_threshold();
+            body_data.flying_high_altitude_threshold = body.flying_high_altitude_threshold();
+
+            body_data.position = tuple2vector3(body.position(m_refrence_frame.refrence_frame));
+            body_data.velocity = tuple2vector3(body.velocity(m_refrence_frame.refrence_frame));
+            body_data.rotation = tuple2quaternion(body.rotation(m_refrence_frame.refrence_frame));
+            body_data.direction = tuple2vector3(body.direction(m_refrence_frame.refrence_frame));
+            body_data.angular_velocity = tuple2vector3(body.angular_velocity(m_refrence_frame.refrence_frame));
+
+            m_celestial_bodies_data.bodies.emplace_back(body_data);
         }
     } catch (const std::exception& ex) {
         RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());

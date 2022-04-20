@@ -3,6 +3,7 @@
 #include <krpc.hpp>
 #include <krpc/services/krpc.hpp>
 #include <krpc/services/space_center.hpp>
+#include <ksp_bridge_interfaces/msg/celestial_bodies.hpp>
 #include <ksp_bridge_interfaces/msg/control.hpp>
 #include <ksp_bridge_interfaces/msg/flight.hpp>
 #include <ksp_bridge_interfaces/msg/float.hpp>
@@ -27,6 +28,7 @@ private:
     bool gather_control_data();
     bool gather_flight_data();
     bool gather_parts_data();
+    bool gather_celestial_bodies_data();
 
     void send_tf_tree();
 
@@ -52,6 +54,7 @@ private:
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Control>::SharedPtr m_control_publisher;
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Flight>::SharedPtr m_flight_publisher;
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Parts>::SharedPtr m_parts_publisher;
+    rclcpp::Publisher<ksp_bridge_interfaces::msg::CelestialBodies>::SharedPtr m_celestial_bodies_publisher;
 
     std::unique_ptr<tf2_ros::TransformBroadcaster> m_tf_broadcaster;
 
@@ -61,6 +64,7 @@ private:
     ksp_bridge_interfaces::msg::Control m_control_data;
     ksp_bridge_interfaces::msg::Flight m_flight_data;
     ksp_bridge_interfaces::msg::Parts m_parts_data;
+    ksp_bridge_interfaces::msg::CelestialBodies m_celestial_bodies_data;
 
     rclcpp::Subscription<ksp_bridge_interfaces::msg::Float>::SharedPtr m_throttle_sub;
 };

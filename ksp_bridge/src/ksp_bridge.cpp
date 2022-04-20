@@ -93,6 +93,7 @@ void KSPBridge::init_communication()
     m_control_publisher = create_publisher<ksp_bridge_interfaces::msg::Control>("/vessel/control", 10);
     m_flight_publisher = create_publisher<ksp_bridge_interfaces::msg::Flight>("/vessel/flight", 10);
     m_parts_publisher = create_publisher<ksp_bridge_interfaces::msg::Parts>("/vessel/parts", 10);
+    m_celestial_bodies_publisher = create_publisher<ksp_bridge_interfaces::msg::CelestialBodies>("/celestial_bodies", 10);
 
     m_tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
@@ -124,6 +125,10 @@ void KSPBridge::publish_data()
 
     if (gather_parts_data()) {
         m_parts_publisher->publish(m_parts_data);
+    }
+
+    if (gather_celestial_bodies_data()) {
+        m_celestial_bodies_publisher->publish(m_celestial_bodies_data);
     }
 
     send_tf_tree();

@@ -17,6 +17,9 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   msg/Vessel.msg
+  msg/CelestialBody.msg
+  msg/CelestialBodies.msg
+  msg/Orbit.msg
   msg/Control.msg
   msg/Flight.msg
   msg/Resource.msg
