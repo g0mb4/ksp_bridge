@@ -15,7 +15,7 @@ void KSPBridge::send_tf_tree()
 
     m_tf_broadcaster->sendTransform(t_ws);
 
-    // sun -> bodies, bodies -> vessel
+    // sun -> bodies
     auto sun_rf = m_celestial_bodies["Sun"].reference_frame();
     auto vessel_rf = m_vessel->reference_frame();
     for (auto it = m_celestial_bodies.begin(); it != m_celestial_bodies.end(); ++it) {
@@ -42,6 +42,7 @@ void KSPBridge::send_tf_tree()
             continue;
         }
 
+        // kerbin -> vessel
         auto pos_body = m_vessel->position(body_rf);
         auto rot_body = m_vessel->rotation(body_rf);
 

@@ -25,7 +25,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/Resource.msg
   msg/Part.msg
   msg/Parts.msg
-  msg/Float.msg
+  msg/CmdThrottle.msg
+  msg/CmdRotation.msg
   DEPENDENCIES std_msgs geometry_msgs
 )
 

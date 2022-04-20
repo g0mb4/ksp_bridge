@@ -143,10 +143,15 @@ void KSPBridge::init_communication()
 
     m_tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
-    m_throttle_sub = create_subscription<ksp_bridge_interfaces::msg::Float>(
-        "/throttle",
+    m_cmd_throttle_sub = create_subscription<ksp_bridge_interfaces::msg::CmdThrottle>(
+        "/cmd_throttle",
         10,
-        std::bind(&KSPBridge::throttle_sub, this, std::placeholders::_1));
+        std::bind(&KSPBridge::cmd_throttle_sub, this, std::placeholders::_1));
+
+    m_cmd_rotation_sub = create_subscription<ksp_bridge_interfaces::msg::CmdRotation>(
+        "/cmd_rotation",
+        10,
+        std::bind(&KSPBridge::cmd_rotation_sub, this, std::placeholders::_1));
 }
 
 void KSPBridge::publish_data()

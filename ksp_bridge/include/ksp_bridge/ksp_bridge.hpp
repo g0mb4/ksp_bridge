@@ -4,9 +4,10 @@
 #include <krpc/services/krpc.hpp>
 #include <krpc/services/space_center.hpp>
 #include <ksp_bridge_interfaces/msg/celestial_bodies.hpp>
+#include <ksp_bridge_interfaces/msg/cmd_rotation.hpp>
+#include <ksp_bridge_interfaces/msg/cmd_throttle.hpp>
 #include <ksp_bridge_interfaces/msg/control.hpp>
 #include <ksp_bridge_interfaces/msg/flight.hpp>
-#include <ksp_bridge_interfaces/msg/float.hpp>
 #include <ksp_bridge_interfaces/msg/orbit.hpp>
 #include <ksp_bridge_interfaces/msg/parts.hpp>
 #include <ksp_bridge_interfaces/msg/vessel.hpp>
@@ -36,14 +37,15 @@ private:
 
     void publish_data();
 
+    bool change_reference_frame(const std::string& name);
+
+    void cmd_throttle_sub(const ksp_bridge_interfaces::msg::CmdThrottle::SharedPtr msg);
+    void cmd_rotation_sub(const ksp_bridge_interfaces::msg::CmdRotation::SharedPtr msg);
+
     struct NamedReferenceFrame {
         std::string name;
         krpc::services::SpaceCenter::ReferenceFrame refrence_frame;
     };
-
-    void throttle_sub(const ksp_bridge_interfaces::msg::Float::SharedPtr msg);
-
-    bool change_reference_frame(const std::string& name);
 
     std::unique_ptr<krpc::Client> m_ksp_client;
     std::unique_ptr<krpc::services::KRPC> m_krpc;
@@ -74,5 +76,6 @@ private:
     ksp_bridge_interfaces::msg::CelestialBodies m_celestial_bodies_data;
     ksp_bridge_interfaces::msg::Orbit m_orbit_data;
 
-    rclcpp::Subscription<ksp_bridge_interfaces::msg::Float>::SharedPtr m_throttle_sub;
+    rclcpp::Subscription<ksp_bridge_interfaces::msg::CmdThrottle>::SharedPtr m_cmd_throttle_sub;
+    rclcpp::Subscription<ksp_bridge_interfaces::msg::CmdRotation>::SharedPtr m_cmd_rotation_sub;
 };

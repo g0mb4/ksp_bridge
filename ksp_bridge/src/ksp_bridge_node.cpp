@@ -1,4 +1,4 @@
-#include "ksp_bridge/ksp_bridge.hpp"
+#include <ksp_bridge/ksp_bridge.hpp>
 
 int main(int argc, char** argv)
 {
