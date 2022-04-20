@@ -9,6 +9,7 @@
 #include <ksp_bridge_interfaces/msg/parts.hpp>
 #include <ksp_bridge_interfaces/msg/vessel.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tf2_ros/transform_broadcaster.h>
 
 class KSPBridge : public rclcpp::Node {
 public:
@@ -26,6 +27,8 @@ private:
     bool gather_control_data();
     bool gather_flight_data();
     bool gather_parts_data();
+
+    void send_tf_tree();
 
     void publish_data();
 
@@ -49,6 +52,8 @@ private:
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Control>::SharedPtr m_control_publisher;
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Flight>::SharedPtr m_flight_publisher;
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Parts>::SharedPtr m_parts_publisher;
+
+    std::unique_ptr<tf2_ros::TransformBroadcaster> m_tf_broadcaster;
 
     rclcpp::TimerBase::SharedPtr m_publish_timer;
 

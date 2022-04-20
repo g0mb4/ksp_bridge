@@ -1,4 +1,6 @@
 #include "ksp_bridge/utils.hpp"
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 geometry_msgs::msg::Vector3 tuple2vector3(const std::tuple<double, double, double>& t)
 {
@@ -21,4 +23,36 @@ geometry_msgs::msg::Quaternion tuple2quaternion(const std::tuple<double, double,
     q.w = std::get<3>(t);
 
     return q;
+}
+
+geometry_msgs::msg::TransformStamped get_transform(krpc::services::SpaceCenter& ss, std::tuple<double, double, double> position, std::tuple<double, double, double, double> rotation, krpc::services::SpaceCenter::ReferenceFrame from, krpc::services::SpaceCenter::ReferenceFrame to)
+{
+    geometry_msgs::msg::TransformStamped t;
+
+    auto new_position = ss.transform_position(position, from, to);
+    auto new_rotation = ss.transform_rotation(rotation, from, to);
+
+    auto pos1 = tuple2vector3(position);
+    auto pos2 = tuple2vector3(new_position);
+
+    auto rot1 = tuple2quaternion(rotation);
+    auto rot2 = tuple2quaternion(new_rotation);
+
+    t.transform.translation.x = pos2.x - pos1.x;
+    t.transform.translation.y = pos2.y - pos1.y;
+    t.transform.translation.z = pos2.z - pos1.z;
+
+    tf2::Quaternion q1, q2, q1_inv;
+    tf2::convert(rot1, q1);
+    tf2::convert(rot2, q2);
+    q1_inv = q1.inverse();
+
+    auto rot = q2 * q1_inv;
+
+    t.transform.rotation.x = rot.x();
+    t.transform.rotation.y = rot.y();
+    t.transform.rotation.z = rot.z();
+    t.transform.rotation.w = rot.w();
+
+    return t;
 }

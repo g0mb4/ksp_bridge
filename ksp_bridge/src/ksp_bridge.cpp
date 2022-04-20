@@ -81,7 +81,7 @@ void KSPBridge::find_active_vessel()
         m_refrence_frame.name = "kerbin";
         m_refrence_frame.refrence_frame = m_celestial_bodies["Kerbin"].reference_frame();
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s", ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
     }
 
     init_communication();
@@ -93,6 +93,8 @@ void KSPBridge::init_communication()
     m_control_publisher = create_publisher<ksp_bridge_interfaces::msg::Control>("/vessel/control", 10);
     m_flight_publisher = create_publisher<ksp_bridge_interfaces::msg::Flight>("/vessel/flight", 10);
     m_parts_publisher = create_publisher<ksp_bridge_interfaces::msg::Parts>("/vessel/parts", 10);
+
+    m_tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
     m_throttle_sub = create_subscription<ksp_bridge_interfaces::msg::Float>(
         "/throttle",
@@ -107,6 +109,8 @@ void KSPBridge::publish_data()
     }
 
     validate_active_vessel();
+
+    send_tf_tree();
 
     if (gather_vessel_data()) {
         m_vessel_publisher->publish(m_vessel_data);

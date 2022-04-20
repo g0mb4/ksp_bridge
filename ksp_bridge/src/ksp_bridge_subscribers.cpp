@@ -12,6 +12,6 @@ void KSPBridge::throttle_sub(const ksp_bridge_interfaces::msg::Float::SharedPtr 
     try {
         m_vessel->control().set_throttle(value);
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s", ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
     }
 }

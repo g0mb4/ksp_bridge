@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(ksp_bridge)
 
-if(NOT CMAKE_C_STANDARD)
-  set(CMAKE_C_STANDARD 99)
-endif()
-
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
@@ -16,6 +12,9 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(ksp_bridge_interfaces REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 include(FindProtobuf)
 find_package(Protobuf 3.2 REQUIRED)
@@ -34,14 +33,15 @@ add_executable(${PROJECT_NAME}
   src/ksp_bridge.cpp
   src/ksp_bridge_publishers.cpp
   src/ksp_bridge_subscribers.cpp
+  src/ksp_bridge_tf_tree.cpp
   src/utils.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
-  std_msgs
-  geometry_msgs
   ksp_bridge_interfaces
+  tf2
+  tf2_ros
 )
 
 target_link_libraries(${PROJECT_NAME}

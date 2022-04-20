@@ -47,7 +47,7 @@ bool KSPBridge::gather_vessel_data()
         m_vessel_data.direction = tuple2vector3(m_vessel->direction(m_refrence_frame.refrence_frame));
         m_vessel_data.angular_velocity = tuple2vector3(m_vessel->angular_velocity(m_refrence_frame.refrence_frame));
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s", ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
         return false;
     }
 
@@ -94,7 +94,7 @@ bool KSPBridge::gather_control_data()
         m_control_data.wheel_steering = control.wheel_steering();
         m_control_data.current_stage = control.current_stage();
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s", ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
         return false;
     }
 
@@ -146,7 +146,7 @@ bool KSPBridge::gather_flight_data()
         m_flight_data.total_air_temperature = flight.total_air_temperature();
         m_flight_data.static_air_temperature = flight.static_air_temperature();
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s", ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
         return false;
     }
 
@@ -159,16 +159,16 @@ bool KSPBridge::gather_parts_data()
         auto parts = m_vessel->parts().all();
         m_parts_data.parts.clear();
 
-        // note: vessel's frame?
-        m_parts_data.header.frame_id = m_refrence_frame.name;
+        m_parts_data.header.frame_id = "vessel";
         m_parts_data.header.stamp = now();
+        auto vessel_rf = m_vessel->reference_frame();
 
         for (auto& part : parts) {
             try {
                 auto part_data = ksp_bridge_interfaces::msg::Part();
 
                 part_data.name = part.name();
-                //part_data.title = part.title();
+                part_data.title = part.title();
                 //part_data.tag = part.tag();
                 part_data.highlighted = part.highlighted();
                 part_data.highlight_color = tuple2vector3(part.highlight_color());
@@ -213,15 +213,15 @@ bool KSPBridge::gather_parts_data()
                 part_data.crossfeed = part.crossfeed();
                 part_data.is_fuel_line = part.is_fuel_line();
                 // TODO: reference frame of the vessel ???
-                part_data.position = tuple2vector3(part.position(m_refrence_frame.refrence_frame));
-                part_data.center_of_mass = tuple2vector3(part.center_of_mass(m_refrence_frame.refrence_frame));
-                part_data.direction = tuple2vector3(part.direction(m_refrence_frame.refrence_frame));
-                part_data.velocity = tuple2vector3(part.velocity(m_refrence_frame.refrence_frame));
-                part_data.rotation = tuple2quaternion(part.rotation(m_refrence_frame.refrence_frame));
+                part_data.position = tuple2vector3(part.position(vessel_rf));
+                part_data.center_of_mass = tuple2vector3(part.center_of_mass(vessel_rf));
+                part_data.direction = tuple2vector3(part.direction(vessel_rf));
+                part_data.velocity = tuple2vector3(part.velocity(vessel_rf));
+                part_data.rotation = tuple2quaternion(part.rotation(vessel_rf));
                 part_data.moment_of_inertia = tuple2vector3(part.moment_of_inertia());
 
                 part_data.inertia.m = part.mass();
-                part_data.inertia.com = tuple2vector3(part.position(m_refrence_frame.refrence_frame));
+                part_data.inertia.com = tuple2vector3(part.position(vessel_rf));
                 // TODO: check this
                 part_data.inertia.ixx = part.inertia_tensor()[0];
                 part_data.inertia.ixy = part.inertia_tensor()[1];
@@ -232,12 +232,12 @@ bool KSPBridge::gather_parts_data()
 
                 m_parts_data.parts.emplace_back(part_data);
             } catch (const std::exception& ex) {
-                RCLCPP_ERROR(get_logger(), "%s", ex.what());
+                RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
                 continue;
             }
         }
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s", ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
         return false;
     }
 
