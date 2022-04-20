@@ -37,4 +37,22 @@ void KSPBridge::send_tf_tree()
     t_kv.header.frame_id = "kerbin";
     t_kv.child_frame_id = "vessel";
     m_tf_broadcaster->sendTransform(t_kv);
+
+    for (auto& part : m_parts_data.parts) {
+        geometry_msgs::msg::TransformStamped t;
+        t.header.stamp = now();
+        t.header.frame_id = "vessel";
+        t.child_frame_id = part.name;
+
+        t.transform.translation.x = part.position.x;
+        t.transform.translation.y = part.position.y;
+        t.transform.translation.z = part.position.z;
+
+        t.transform.rotation.x = part.rotation.x;
+        t.transform.rotation.y = part.rotation.y;
+        t.transform.rotation.z = part.rotation.z;
+        t.transform.rotation.w = part.rotation.w;
+
+        m_tf_broadcaster->sendTransform(t);
+    }
 }

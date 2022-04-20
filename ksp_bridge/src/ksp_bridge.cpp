@@ -110,8 +110,6 @@ void KSPBridge::publish_data()
 
     validate_active_vessel();
 
-    send_tf_tree();
-
     if (gather_vessel_data()) {
         m_vessel_publisher->publish(m_vessel_data);
     }
@@ -127,4 +125,6 @@ void KSPBridge::publish_data()
     if (gather_parts_data()) {
         m_parts_publisher->publish(m_parts_data);
     }
+
+    send_tf_tree();
 }
