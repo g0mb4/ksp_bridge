@@ -12,7 +12,7 @@ void KSPBridge::cmd_throttle_sub(const ksp_bridge_interfaces::msg::CmdThrottle::
     try {
         m_vessel->control().set_throttle(value);
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", base_name(__FILE__), __LINE__, ex.what());
     }
 }
 
@@ -27,7 +27,7 @@ void KSPBridge::cmd_rotation_sub(const ksp_bridge_interfaces::msg::CmdRotation::
     try {
         m_vessel->control().set_pitch(value);
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", base_name(__FILE__), __LINE__, ex.what());
     }
 
     if (msg->yaw > 1 || msg->yaw < -1) {
@@ -39,7 +39,7 @@ void KSPBridge::cmd_rotation_sub(const ksp_bridge_interfaces::msg::CmdRotation::
     try {
         m_vessel->control().set_yaw(value);
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", base_name(__FILE__), __LINE__, ex.what());
     }
 
     if (msg->roll > 1 || msg->roll < -1) {
@@ -51,6 +51,6 @@ void KSPBridge::cmd_rotation_sub(const ksp_bridge_interfaces::msg::CmdRotation::
     try {
         m_vessel->control().set_roll(value);
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", base_name(__FILE__), __LINE__, ex.what());
     }
 }

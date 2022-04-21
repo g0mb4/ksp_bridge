@@ -18,10 +18,11 @@ T clamp(T val, T min, T max)
     }
 }
 
+const char* base_name(const char* file);
+
 std::string str_lowercase(const std::string& s);
 
-geometry_msgs::msg::Vector3
-tuple2vector3(const std::tuple<double, double, double>& t);
+geometry_msgs::msg::Vector3 tuple2vector3(const std::tuple<double, double, double>& t);
 
 geometry_msgs::msg::Quaternion tuple2quaternion(const std::tuple<double, double, double, double>& t);
 

@@ -3,6 +3,19 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
+const char* base_name(const char* file)
+{
+    const char* ret = file;
+
+    while (*file++) {
+        if (*file == '/') {
+            ret = file + 1;
+        }
+    }
+
+    return ret;
+}
+
 std::string str_lowercase(const std::string& s)
 {
     auto lower = s;

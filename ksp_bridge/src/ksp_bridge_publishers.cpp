@@ -47,7 +47,8 @@ bool KSPBridge::gather_vessel_data()
         m_vessel_data.direction = tuple2vector3(m_vessel->direction(m_refrence_frame.refrence_frame));
         m_vessel_data.angular_velocity = tuple2vector3(m_vessel->angular_velocity(m_refrence_frame.refrence_frame));
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", base_name(__FILE__), __LINE__, ex.what());
+        invalidate_active_vessel();
         return false;
     }
 
@@ -94,7 +95,8 @@ bool KSPBridge::gather_control_data()
         m_control_data.wheel_steering = control.wheel_steering();
         m_control_data.current_stage = control.current_stage();
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", base_name(__FILE__), __LINE__, ex.what());
+        invalidate_active_vessel();
         return false;
     }
 
@@ -146,7 +148,8 @@ bool KSPBridge::gather_flight_data()
         m_flight_data.total_air_temperature = flight.total_air_temperature();
         m_flight_data.static_air_temperature = flight.static_air_temperature();
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", base_name(__FILE__), __LINE__, ex.what());
+        invalidate_active_vessel();
         return false;
     }
 
@@ -238,12 +241,13 @@ bool KSPBridge::gather_parts_data()
 
                 m_parts_data.parts.emplace_back(part_data);
             } catch (const std::exception& ex) {
-                RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+                RCLCPP_ERROR(get_logger(), "%s:%d: %s", base_name(__FILE__), __LINE__, ex.what());
                 continue;
             }
         }
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", base_name(__FILE__), __LINE__, ex.what());
+        invalidate_active_vessel();
         return false;
     }
 
@@ -289,7 +293,8 @@ bool KSPBridge::gather_celestial_bodies_data()
             m_celestial_bodies_data.bodies.emplace_back(body_data);
         }
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", base_name(__FILE__), __LINE__, ex.what());
+        invalidate_active_vessel();
         return false;
     }
 
@@ -325,7 +330,8 @@ bool KSPBridge::gather_orbit_data()
         m_orbit_data.orbital_speed = orbit.orbital_speed();
         m_orbit_data.time_to_soi_change = orbit.time_to_soi_change();
     } catch (const std::exception& ex) {
-        RCLCPP_ERROR(get_logger(), "%s:%d: %s", __FILE__, __LINE__, ex.what());
+        RCLCPP_ERROR(get_logger(), "%s:%d: %s", base_name(__FILE__), __LINE__, ex.what());
+        invalidate_active_vessel();
         return false;
     }
 

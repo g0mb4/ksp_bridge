@@ -20,9 +20,10 @@ public:
 
 private:
     void connect();
-    void validate_active_vessel();
     bool is_valid_screen();
 
+    void validate_active_vessel();
+    void invalidate_active_vessel();
     void find_active_vessel();
     void init_communication();
 

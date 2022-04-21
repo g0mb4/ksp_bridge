@@ -42,19 +42,26 @@ void KSPBridge::connect()
 bool KSPBridge::is_valid_screen()
 {
     auto scene = m_krpc->current_game_scene();
-    if (scene == krpc::services::KRPC::GameScene::editor_sph
-        || scene == krpc::services::KRPC::GameScene::editor_vab) {
 
+    if (scene == krpc::services::KRPC::GameScene::flight) {
+        return true;
+    } else {
+        RCLCPP_WARN(get_logger(), "Invalid game screen.");
+        invalidate_active_vessel();
         return false;
     }
-
-    return true;
 }
 
 void KSPBridge::validate_active_vessel()
 {
-    bool is_valid = false;
+    // vessel has been invalidated
+    if (m_vessel == nullptr) {
+        connect();
+        find_active_vessel();
+        return;
+    }
 
+    bool is_valid = false;
     try {
         m_vessel = std::make_unique<krpc::services::SpaceCenter::Vessel>(m_space_center->active_vessel());
         is_valid = true;
@@ -64,6 +71,12 @@ void KSPBridge::validate_active_vessel()
     if (!is_valid) {
         find_active_vessel();
     }
+}
+
+void KSPBridge::invalidate_active_vessel()
+{
+    m_vessel = nullptr;
+    RCLCPP_WARN(get_logger(), "Vessel has been invalidated.");
 }
 
 void KSPBridge::find_active_vessel()
@@ -104,24 +117,6 @@ void KSPBridge::find_active_vessel()
     }
 
     init_communication();
-}
-
-bool KSPBridge::change_reference_frame(const std::string& name)
-{
-    if (name == "vessel") {
-        m_refrence_frame.name = "vessel";
-        m_refrence_frame.refrence_frame = m_vessel->reference_frame();
-        return true;
-    }
-
-    auto it = m_celestial_bodies.find(name);
-    if (it != m_celestial_bodies.end()) {
-        m_refrence_frame.name = name;
-        m_refrence_frame.refrence_frame = it->second.reference_frame();
-        return true;
-    }
-
-    return false;
 }
 
 void KSPBridge::init_communication()
