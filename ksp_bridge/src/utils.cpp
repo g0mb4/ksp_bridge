@@ -1,6 +1,18 @@
+#include <cctype>
 #include <ksp_bridge/utils.hpp>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
+std::string str_lowercase(const std::string& s)
+{
+    auto lower = s;
+    std::transform(lower.begin(), lower.end(), lower.begin(),
+        [](char c) {
+            return std::tolower(c);
+        });
+
+    return lower;
+}
 
 geometry_msgs::msg::Vector3 tuple2vector3(const std::tuple<double, double, double>& t)
 {

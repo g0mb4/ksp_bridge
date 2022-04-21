@@ -1,8 +1,6 @@
-#include <cctype>
 #include <krpc/services/krpc.hpp>
 #include <ksp_bridge/ksp_bridge.hpp>
 #include <ksp_bridge/utils.hpp>
-#include <string>
 
 #include <stdlib.h>
 
@@ -10,7 +8,7 @@ KSPBridge::KSPBridge()
     : rclcpp::Node("ksp_bridge")
 {
     declare_parameter<int64_t>("update_interval_ms", 100);
-    declare_parameter<std::vector<std::string>>("celestial_bodies", { "Sun", "Kerbin", "Mun" });
+    declare_parameter<std::vector<std::string>>("celestial_bodies", { "sun", "kerbin", "mun" });
 
     int64_t update_interval_ms = get_parameter("update_interval_ms").as_int();
     m_param_celestial_bodies = get_parameter("celestial_bodies").as_string_array();
@@ -85,15 +83,16 @@ void KSPBridge::find_active_vessel()
 
     for (auto it = bodies.begin(); it != bodies.end(); ++it) {
         auto name = it->second.name();
+        auto name_lower = str_lowercase(name);
 
-        auto it_find = std::find(m_param_celestial_bodies.begin(), m_param_celestial_bodies.end(), name);
+        auto it_find = std::find(m_param_celestial_bodies.begin(), m_param_celestial_bodies.end(), name_lower);
 
         if (it_find != m_param_celestial_bodies.end()) {
-            m_celestial_bodies[name] = it->second;
+            m_celestial_bodies[name_lower] = it->second;
         }
     }
 
-    auto it = m_celestial_bodies.find("Sun");
+    auto it = m_celestial_bodies.find("sun");
     if (it == m_celestial_bodies.end()) {
         RCLCPP_FATAL(get_logger(), "Sun is a required celestial body.");
         exit(1);
@@ -109,20 +108,13 @@ void KSPBridge::find_active_vessel()
 
 bool KSPBridge::change_reference_frame(const std::string& name)
 {
-    if (name.size() < 1) {
-        return false;
-    }
-
     if (name == "vessel") {
         m_refrence_frame.name = "vessel";
         m_refrence_frame.refrence_frame = m_vessel->reference_frame();
-
         return true;
     }
 
-    auto cap_name = name;
-    cap_name[0] = std::toupper(name[0]);
-    auto it = m_celestial_bodies.find(cap_name);
+    auto it = m_celestial_bodies.find(name);
     if (it != m_celestial_bodies.end()) {
         m_refrence_frame.name = name;
         m_refrence_frame.refrence_frame = it->second.reference_frame();

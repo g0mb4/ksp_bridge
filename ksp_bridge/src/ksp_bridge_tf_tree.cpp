@@ -1,9 +1,6 @@
-#include <algorithm>
-#include <cctype>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <ksp_bridge/ksp_bridge.hpp>
 #include <ksp_bridge/utils.hpp>
-#include <string>
 
 void KSPBridge::send_tf_tree()
 {
@@ -16,18 +13,18 @@ void KSPBridge::send_tf_tree()
     m_tf_broadcaster->sendTransform(t_ws);
 
     // sun -> bodies
-    auto sun_rf = m_celestial_bodies["Sun"].reference_frame();
+    auto sun_rf = m_celestial_bodies["sun"].reference_frame();
     auto vessel_rf = m_vessel->reference_frame();
     for (auto it = m_celestial_bodies.begin(); it != m_celestial_bodies.end(); ++it) {
-        if (it->first == "Sun") {
+        auto name = it->first;
+        auto body = it->second;
+
+        // sun -> sun transform is not required
+        if (name == "sun") {
             continue;
         }
 
-        auto body_name_to_lower = it->first;
-        std::transform(body_name_to_lower.begin(), body_name_to_lower.end(), body_name_to_lower.begin(),
-            [](unsigned char c) { return std::tolower(c); });
-
-        auto body_rf = it->second.reference_frame();
+        auto body_rf = body.reference_frame();
 
         auto pos_sun = m_vessel->position(sun_rf);
         auto rot_sun = m_vessel->rotation(sun_rf);
@@ -35,20 +32,20 @@ void KSPBridge::send_tf_tree()
         auto t_sb = get_transform(*m_space_center, pos_sun, rot_sun, sun_rf, body_rf);
         t_sb.header.stamp = now();
         t_sb.header.frame_id = "sun";
-        t_sb.child_frame_id = body_name_to_lower;
+        t_sb.child_frame_id = name;
         m_tf_broadcaster->sendTransform(t_sb);
 
-        if (it->first != "Kerbin") {
+        // create only kerbin -> vessel
+        if (name != "kerbin") {
             continue;
         }
 
-        // kerbin -> vessel
         auto pos_body = m_vessel->position(body_rf);
         auto rot_body = m_vessel->rotation(body_rf);
 
         auto t_bv = get_transform(*m_space_center, pos_body, rot_body, body_rf, vessel_rf);
         t_bv.header.stamp = now();
-        t_bv.header.frame_id = body_name_to_lower;
+        t_bv.header.frame_id = name;
         t_bv.child_frame_id = "vessel";
         m_tf_broadcaster->sendTransform(t_bv);
     }
