@@ -27,21 +27,7 @@ private:
     void find_active_vessel();
     void init_communication();
 
-    bool gather_vessel_data();
-    bool gather_control_data();
-    bool gather_flight_data();
-    bool gather_parts_data();
-    bool gather_celestial_bodies_data();
-    bool gather_orbit_data();
-
-    void send_tf_tree();
-
-    void publish_data();
-
     bool change_reference_frame(const std::string& name);
-
-    void cmd_throttle_sub(const ksp_bridge_interfaces::msg::CmdThrottle::SharedPtr msg);
-    void cmd_rotation_sub(const ksp_bridge_interfaces::msg::CmdRotation::SharedPtr msg);
 
     struct NamedReferenceFrame {
         std::string name;
@@ -51,14 +37,12 @@ private:
     std::unique_ptr<krpc::Client> m_ksp_client;
     std::unique_ptr<krpc::services::KRPC> m_krpc;
     std::unique_ptr<krpc::services::SpaceCenter> m_space_center;
-
     std::vector<std::string> m_param_celestial_bodies;
-
     std::unique_ptr<krpc::services::SpaceCenter::Vessel> m_vessel;
     NamedReferenceFrame m_refrence_frame;
-
     std::map<std::string, krpc::services::SpaceCenter::CelestialBody> m_celestial_bodies;
 
+    // publishers
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Vessel>::SharedPtr m_vessel_publisher;
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Control>::SharedPtr m_control_publisher;
     rclcpp::Publisher<ksp_bridge_interfaces::msg::Flight>::SharedPtr m_flight_publisher;
