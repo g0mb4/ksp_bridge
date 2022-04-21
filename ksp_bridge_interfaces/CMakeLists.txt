@@ -16,17 +16,20 @@ find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  msg/Vessel.msg
-  msg/CelestialBody.msg
   msg/CelestialBodies.msg
-  msg/Orbit.msg
+  msg/CelestialBody.msg
+  msg/CmdRotation.msg
+  msg/CmdThrottle.msg
   msg/Control.msg
   msg/Flight.msg
-  msg/Resource.msg
+  msg/Orbit.msg
   msg/Part.msg
   msg/Parts.msg
-  msg/CmdThrottle.msg
-  msg/CmdRotation.msg
+  msg/Resource.msg
+  msg/Vessel.msg
+  srv/Activation.srv
+  srv/String.srv
+  srv/Switch.srv
   DEPENDENCIES std_msgs geometry_msgs
 )
 
