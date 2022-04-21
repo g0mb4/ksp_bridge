@@ -139,6 +139,12 @@ void KSPBridge::init_communication()
         "/cmd_rotation",
         10,
         std::bind(&KSPBridge::cmd_rotation_sub, this, std::placeholders::_1));
+
+    m_next_stage_srv = create_service<ksp_bridge_interfaces::srv::Activation>(
+        "/next_stage",
+        std::bind(
+            &KSPBridge::next_stage_srv, this,
+            std::placeholders::_1, std::placeholders::_2));
 }
 
 void KSPBridge::publish_data()

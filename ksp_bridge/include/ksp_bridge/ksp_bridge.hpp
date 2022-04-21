@@ -11,6 +11,7 @@
 #include <ksp_bridge_interfaces/msg/orbit.hpp>
 #include <ksp_bridge_interfaces/msg/parts.hpp>
 #include <ksp_bridge_interfaces/msg/vessel.hpp>
+#include <ksp_bridge_interfaces/srv/activation.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 
@@ -61,6 +62,28 @@ private:
     ksp_bridge_interfaces::msg::CelestialBodies m_celestial_bodies_data;
     ksp_bridge_interfaces::msg::Orbit m_orbit_data;
 
+    bool gather_vessel_data();
+    bool gather_control_data();
+    bool gather_flight_data();
+    bool gather_parts_data();
+    bool gather_celestial_bodies_data();
+    bool gather_orbit_data();
+
+    void send_tf_tree();
+
+    void publish_data();
+
+    // subscribers
     rclcpp::Subscription<ksp_bridge_interfaces::msg::CmdThrottle>::SharedPtr m_cmd_throttle_sub;
     rclcpp::Subscription<ksp_bridge_interfaces::msg::CmdRotation>::SharedPtr m_cmd_rotation_sub;
+
+    void cmd_throttle_sub(const ksp_bridge_interfaces::msg::CmdThrottle::SharedPtr);
+    void cmd_rotation_sub(const ksp_bridge_interfaces::msg::CmdRotation::SharedPtr);
+
+    // servers
+    rclcpp::Service<ksp_bridge_interfaces::srv::Activation>::SharedPtr m_next_stage_srv;
+
+    void next_stage_srv(
+        const ksp_bridge_interfaces::srv::Activation::Request::SharedPtr,
+        const ksp_bridge_interfaces::srv::Activation::Response::SharedPtr);
 };

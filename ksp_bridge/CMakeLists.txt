@@ -34,6 +34,7 @@ add_executable(${PROJECT_NAME}
   src/ksp_bridge_publishers.cpp
   src/ksp_bridge_subscribers.cpp
   src/ksp_bridge_tf_tree.cpp
+  src/ksp_bridge_servers.cpp
   src/utils.cpp
 )
 
