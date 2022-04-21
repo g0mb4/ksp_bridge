@@ -28,6 +28,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/Resource.msg
   msg/Vessel.msg
   srv/Activation.srv
+  srv/SAS.srv
   srv/String.srv
   srv/Switch.srv
   DEPENDENCIES std_msgs geometry_msgs

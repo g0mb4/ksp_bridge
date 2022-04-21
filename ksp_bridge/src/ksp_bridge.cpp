@@ -145,6 +145,12 @@ void KSPBridge::init_communication()
         std::bind(
             &KSPBridge::next_stage_srv, this,
             std::placeholders::_1, std::placeholders::_2));
+
+    m_sas_srv = create_service<ksp_bridge_interfaces::srv::SAS>(
+        "/sas",
+        std::bind(
+            &KSPBridge::sas_srv, this,
+            std::placeholders::_1, std::placeholders::_2));
 }
 
 void KSPBridge::publish_data()
