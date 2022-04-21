@@ -4,7 +4,7 @@ ROS2 package for Kerbal Space Program based on the kRPC mod.
 
 ## Installation
 
-The installation of the kRPC mod and it's dependencies.
+The installation of the [kRPC mod](https://github.com/nullprofile/krpc) and it's dependencies.
 
 ### Libraries
 
@@ -49,3 +49,25 @@ make
 sudo make install
 sudo ldconfig
 ```
+
+## Compilation
+
+Assuming the ROS2 workspace is *~/ros2_ws*.
+
+```bash
+cd ~/ros2_ws/src
+git clone https://github.com/g0mb4/ksp_bridge.git
+cd ..
+colcon build
+source ~/.bashrc
+```
+
+## Server settings
+
+![up_and_down_assembly](doc/img/server_settings.jpg)
+
+**Note**: *Max. time per update* is required to be high, but it affects the framerate.
+
+## Usage
+
+See examples.
