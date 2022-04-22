@@ -4,9 +4,11 @@
 
 bool KSPBridge::change_reference_frame(const std::string& name)
 {
+    m_refrence_frame.lock.lock();
     if (name == "vessel") {
         m_refrence_frame.name = "vessel";
         m_refrence_frame.refrence_frame = m_vessel->reference_frame();
+        m_refrence_frame.lock.unlock();
         return true;
     }
 
@@ -14,13 +16,15 @@ bool KSPBridge::change_reference_frame(const std::string& name)
     if (it != m_celestial_bodies.end()) {
         m_refrence_frame.name = name;
         m_refrence_frame.refrence_frame = it->second.reference_frame();
+        m_refrence_frame.lock.unlock();
         return true;
     }
 
+    m_refrence_frame.lock.unlock();
     return false;
 }
 
-void KSPBridge::send_tf_tree()
+void KSPBridge::send_tf_tree(NamedReferenceFrame& frame)
 {
     try {
         // world -> sun, world = sun

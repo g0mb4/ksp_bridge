@@ -153,38 +153,3 @@ void KSPBridge::init_communication()
             &KSPBridge::sas_srv, this,
             std::placeholders::_1, std::placeholders::_2));
 }
-
-void KSPBridge::publish_data()
-{
-    if (!is_valid_screen()) {
-        return;
-    }
-
-    validate_active_vessel();
-
-    if (gather_vessel_data()) {
-        m_vessel_publisher->publish(m_vessel_data);
-    }
-
-    if (gather_control_data()) {
-        m_control_publisher->publish(m_control_data);
-    }
-
-    if (gather_flight_data()) {
-        m_flight_publisher->publish(m_flight_data);
-    }
-
-    if (gather_parts_data()) {
-        m_parts_publisher->publish(m_parts_data);
-    }
-
-    if (gather_celestial_bodies_data()) {
-        m_celestial_bodies_publisher->publish(m_celestial_bodies_data);
-    }
-
-    if (gather_orbit_data()) {
-        m_orbit_publisher->publish(m_orbit_data);
-    }
-
-    send_tf_tree();
-}

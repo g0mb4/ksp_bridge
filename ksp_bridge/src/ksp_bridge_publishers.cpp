@@ -4,10 +4,51 @@
 #include <ksp_bridge_interfaces/msg/celestial_body.hpp>
 #include <ksp_bridge_interfaces/msg/resource.hpp>
 
-bool KSPBridge::gather_vessel_data()
+void KSPBridge::publish_data()
+{
+    if (!is_valid_screen()) {
+        return;
+    }
+
+    validate_active_vessel();
+
+    NamedReferenceFrame frame;
+    m_refrence_frame.lock.lock();
+    frame.name = m_refrence_frame.name;
+    frame.refrence_frame = m_refrence_frame.refrence_frame;
+    m_refrence_frame.lock.unlock();
+
+    if (gather_vessel_data(frame)) {
+        m_vessel_publisher->publish(m_vessel_data);
+    }
+
+    if (gather_control_data(frame)) {
+        m_control_publisher->publish(m_control_data);
+    }
+
+    if (gather_flight_data(frame)) {
+        m_flight_publisher->publish(m_flight_data);
+    }
+
+    if (gather_parts_data()) {
+        m_parts_publisher->publish(m_parts_data);
+    }
+
+    if (gather_celestial_bodies_data(frame)) {
+        m_celestial_bodies_publisher->publish(m_celestial_bodies_data);
+    }
+
+    if (gather_orbit_data()) {
+        m_orbit_publisher->publish(m_orbit_data);
+    }
+
+    send_tf_tree(frame);
+}
+
+bool KSPBridge::gather_vessel_data(NamedReferenceFrame& frame)
 {
     try {
-        m_vessel_data.header.frame_id = m_refrence_frame.name;
+        m_vessel_data.header.frame_id = frame.name;
         m_vessel_data.header.stamp = now();
         m_vessel_data.name = m_vessel->name();
         m_vessel_data.type = (uint8_t)m_vessel->type();
@@ -32,7 +73,7 @@ bool KSPBridge::gather_vessel_data()
         m_vessel_data.moment_of_inertia = tuple2vector3(m_vessel->moment_of_inertia());
 
         m_vessel_data.inertia.m = m_vessel->mass();
-        m_vessel_data.inertia.com = tuple2vector3(m_vessel->position(m_refrence_frame.refrence_frame));
+        m_vessel_data.inertia.com = tuple2vector3(m_vessel->position(frame.refrence_frame));
         // TODO: check this
         m_vessel_data.inertia.ixx = m_vessel->inertia_tensor()[0];
         m_vessel_data.inertia.ixy = m_vessel->inertia_tensor()[1];
@@ -41,11 +82,11 @@ bool KSPBridge::gather_vessel_data()
         m_vessel_data.inertia.iyz = m_vessel->inertia_tensor()[4];
         m_vessel_data.inertia.izz = m_vessel->inertia_tensor()[5];
 
-        m_vessel_data.position = tuple2vector3(m_vessel->position(m_refrence_frame.refrence_frame));
-        m_vessel_data.velocity = tuple2vector3(m_vessel->velocity(m_refrence_frame.refrence_frame));
-        m_vessel_data.rotation = tuple2quaternion(m_vessel->rotation(m_refrence_frame.refrence_frame));
-        m_vessel_data.direction = tuple2vector3(m_vessel->direction(m_refrence_frame.refrence_frame));
-        m_vessel_data.angular_velocity = tuple2vector3(m_vessel->angular_velocity(m_refrence_frame.refrence_frame));
+        m_vessel_data.position = tuple2vector3(m_vessel->position(frame.refrence_frame));
+        m_vessel_data.velocity = tuple2vector3(m_vessel->velocity(frame.refrence_frame));
+        m_vessel_data.rotation = tuple2quaternion(m_vessel->rotation(frame.refrence_frame));
+        m_vessel_data.direction = tuple2vector3(m_vessel->direction(frame.refrence_frame));
+        m_vessel_data.angular_velocity = tuple2vector3(m_vessel->angular_velocity(frame.refrence_frame));
     } catch (const std::exception& ex) {
         RCLCPP_ERROR(get_logger(), "%s:%d: %s", base_name(__FILE__), __LINE__, ex.what());
         invalidate_active_vessel();
@@ -55,12 +96,12 @@ bool KSPBridge::gather_vessel_data()
     return true;
 }
 
-bool KSPBridge::gather_control_data()
+bool KSPBridge::gather_control_data(NamedReferenceFrame& frame)
 {
     try {
         auto control = m_vessel->control();
 
-        m_control_data.header.frame_id = m_refrence_frame.name;
+        m_control_data.header.frame_id = frame.name;
         m_control_data.header.stamp = now();
         m_control_data.source = (uint8_t)control.source();
         m_control_data.state = (uint8_t)control.state();
@@ -103,12 +144,12 @@ bool KSPBridge::gather_control_data()
     return true;
 }
 
-bool KSPBridge::gather_flight_data()
+bool KSPBridge::gather_flight_data(NamedReferenceFrame& frame)
 {
     try {
-        auto flight = m_vessel->flight(m_refrence_frame.refrence_frame);
+        auto flight = m_vessel->flight(frame.refrence_frame);
 
-        m_flight_data.header.frame_id = m_refrence_frame.name;
+        m_flight_data.header.frame_id = frame.name;
         m_flight_data.header.stamp = now();
 
         m_flight_data.g_force = flight.g_force();
@@ -254,13 +295,13 @@ bool KSPBridge::gather_parts_data()
     return true;
 }
 
-bool KSPBridge::gather_celestial_bodies_data()
+bool KSPBridge::gather_celestial_bodies_data(NamedReferenceFrame& frame)
 {
     try {
         // FIXME: do not reallocate
         m_celestial_bodies_data.bodies.clear();
 
-        m_celestial_bodies_data.header.frame_id = m_refrence_frame.name;
+        m_celestial_bodies_data.header.frame_id = frame.name;
         m_celestial_bodies_data.header.stamp = now();
 
         for (auto it = m_celestial_bodies.begin(); it != m_celestial_bodies.end(); ++it) {
@@ -284,11 +325,11 @@ bool KSPBridge::gather_celestial_bodies_data()
             body_data.space_high_altitude_threshold = body.space_high_altitude_threshold();
             body_data.flying_high_altitude_threshold = body.flying_high_altitude_threshold();
 
-            body_data.position = tuple2vector3(body.position(m_refrence_frame.refrence_frame));
-            body_data.velocity = tuple2vector3(body.velocity(m_refrence_frame.refrence_frame));
-            body_data.rotation = tuple2quaternion(body.rotation(m_refrence_frame.refrence_frame));
-            body_data.direction = tuple2vector3(body.direction(m_refrence_frame.refrence_frame));
-            body_data.angular_velocity = tuple2vector3(body.angular_velocity(m_refrence_frame.refrence_frame));
+            body_data.position = tuple2vector3(body.position(frame.refrence_frame));
+            body_data.velocity = tuple2vector3(body.velocity(frame.refrence_frame));
+            body_data.rotation = tuple2quaternion(body.rotation(frame.refrence_frame));
+            body_data.direction = tuple2vector3(body.direction(frame.refrence_frame));
+            body_data.angular_velocity = tuple2vector3(body.angular_velocity(frame.refrence_frame));
 
             m_celestial_bodies_data.bodies.emplace_back(body_data);
         }

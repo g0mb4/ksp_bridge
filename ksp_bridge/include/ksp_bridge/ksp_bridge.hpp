@@ -13,6 +13,7 @@
 #include <ksp_bridge_interfaces/msg/vessel.hpp>
 #include <ksp_bridge_interfaces/srv/activation.hpp>
 #include <ksp_bridge_interfaces/srv/sas.hpp>
+#include <mutex>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 
@@ -32,6 +33,7 @@ private:
     bool change_reference_frame(const std::string& name);
 
     struct NamedReferenceFrame {
+        std::mutex lock;
         std::string name;
         krpc::services::SpaceCenter::ReferenceFrame refrence_frame;
     };
@@ -63,14 +65,14 @@ private:
     ksp_bridge_interfaces::msg::CelestialBodies m_celestial_bodies_data;
     ksp_bridge_interfaces::msg::Orbit m_orbit_data;
 
-    bool gather_vessel_data();
-    bool gather_control_data();
-    bool gather_flight_data();
+    bool gather_vessel_data(NamedReferenceFrame& frame);
+    bool gather_control_data(NamedReferenceFrame& frame);
+    bool gather_flight_data(NamedReferenceFrame& frame);
     bool gather_parts_data();
-    bool gather_celestial_bodies_data();
+    bool gather_celestial_bodies_data(NamedReferenceFrame& frame);
     bool gather_orbit_data();
 
-    void send_tf_tree();
+    void send_tf_tree(NamedReferenceFrame& frame);
 
     void publish_data();
 
