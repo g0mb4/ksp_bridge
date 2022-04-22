@@ -2,6 +2,16 @@
 
 ROS2 package for Kerbal Space Program based on the kRPC mod.
 
+Works with:  
+
++ KSP 1.12.3
+
++ kRPC 0.4.9
+
++ ROS2 Foxy
+
++ Ubuntu 20.04
+
 ## Installation
 
 The installation of the [kRPC mod](https://github.com/nullprofile/krpc) and it's dependencies.
