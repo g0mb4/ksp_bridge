@@ -7,15 +7,16 @@
 KSPBridge::KSPBridge()
     : rclcpp::Node("ksp_bridge")
 {
-    declare_parameter<int64_t>("update_interval_ms", 100);
+    declare_parameter<int64_t>("update_interval", 10);
     declare_parameter<std::vector<std::string>>("celestial_bodies", { "sun", "kerbin", "mun" });
 
-    int64_t update_interval_ms = get_parameter("update_interval_ms").as_int();
+    int64_t update_interval = get_parameter("update_interval").as_int();
     m_param_celestial_bodies = get_parameter("celestial_bodies").as_string_array();
 
     connect();
     find_active_vessel();
 
+    uint64_t update_interval_ms = 1000 / update_interval;
     m_publish_timer = create_wall_timer(std::chrono::milliseconds(update_interval_ms),
         std::bind(&KSPBridge::publish_data, this));
 }
