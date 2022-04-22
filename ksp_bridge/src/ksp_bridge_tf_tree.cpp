@@ -6,13 +6,13 @@ bool KSPBridge::change_reference_frame(const std::string& name)
 {
     m_refrence_frame.lock.lock();
     if (name == m_refrence_frame.name) {
-        RCLCPP_WARN(get_logger(), "Raference frame is the same, will not be changed.");
+        RCLCPP_WARN(get_logger(), "Reference frame is the same, will not be changed.");
         m_refrence_frame.lock.unlock();
         return true;
     }
 
     if (name == "vessel") {
-        RCLCPP_INFO(get_logger(), "Refernece frame is changed: '%s' -> '%s'", m_refrence_frame.name.c_str(), name.c_str());
+        RCLCPP_INFO(get_logger(), "Reference frame is changed: '%s' -> '%s'", m_refrence_frame.name.c_str(), name.c_str());
 
         m_refrence_frame.name = "vessel";
         m_refrence_frame.refrence_frame = m_vessel->reference_frame();
@@ -22,7 +22,7 @@ bool KSPBridge::change_reference_frame(const std::string& name)
 
     auto it = m_celestial_bodies.find(name);
     if (it != m_celestial_bodies.end()) {
-        RCLCPP_INFO(get_logger(), "Refernece frame is changed: '%s' -> '%s'", m_refrence_frame.name.c_str(), name.c_str());
+        RCLCPP_INFO(get_logger(), "Reference frame is changed: '%s' -> '%s'", m_refrence_frame.name.c_str(), name.c_str());
 
         m_refrence_frame.name = name;
         m_refrence_frame.refrence_frame = it->second.reference_frame();
@@ -30,6 +30,7 @@ bool KSPBridge::change_reference_frame(const std::string& name)
         return true;
     }
 
+    RCLCPP_ERROR(get_logger(), "%s:%d: Unknown reference frame: '%s'", base_name(__FILE__), __LINE__, name.c_str());
     m_refrence_frame.lock.unlock();
     return false;
 }

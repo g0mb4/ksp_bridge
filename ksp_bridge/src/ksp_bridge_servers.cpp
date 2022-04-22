@@ -100,6 +100,6 @@ void KSPBridge::set_reference_frame(
     res->succeded = success;
     if (!success) {
         res->error = "Unknown reference frame";
-        RCLCPP_ERROR(get_logger(), "Unknown reference frame: %s", req->value.c_str());
+        RCLCPP_ERROR(get_logger(), "%s:%d: Unknown reference frame: '%s'", base_name(__FILE__), __LINE__, req->value.c_str());
     }
 }
