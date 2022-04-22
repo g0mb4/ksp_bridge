@@ -27,51 +27,54 @@ bool KSPBridge::change_reference_frame(const std::string& name)
 void KSPBridge::send_tf_tree(NamedReferenceFrame& frame)
 {
     try {
-        // world -> sun, world = sun
-        geometry_msgs::msg::TransformStamped t_ws;
-        t_ws.header.stamp = now();
-        t_ws.header.frame_id = "world";
-        t_ws.child_frame_id = "sun";
+        // world -> kerbin, world = kerbin
+        // Note: Kerbin is always present.
+        geometry_msgs::msg::TransformStamped t_wordl_kerbin;
+        t_wordl_kerbin.header.stamp = now();
+        t_wordl_kerbin.header.frame_id = "world";
+        t_wordl_kerbin.child_frame_id = "kerbin";
 
-        m_tf_broadcaster->sendTransform(t_ws);
+        m_tf_broadcaster->sendTransform(t_wordl_kerbin);
 
-        // sun -> bodies
-        auto sun_rf = m_celestial_bodies["sun"].reference_frame();
-        auto vessel_rf = m_vessel->reference_frame();
+        // kerbin -> bodies
+        auto kerbin_rf = m_celestial_bodies["kerbin"].reference_frame();
         for (auto it = m_celestial_bodies.begin(); it != m_celestial_bodies.end(); ++it) {
             auto name = it->first;
             auto body = it->second;
 
-            // sun -> sun transform is not required
-            if (name == "sun") {
+            // kerbin -> kerbin transform is not required
+            if (name == "kerbin") {
                 continue;
             }
 
             auto body_rf = body.reference_frame();
 
-            auto pos_sun = m_vessel->position(sun_rf);
-            auto rot_sun = m_vessel->rotation(sun_rf);
+            auto pos_kerbin = m_vessel->position(kerbin_rf);
+            auto rot_kerbin = m_vessel->rotation(kerbin_rf);
 
-            auto t_sb = get_transform(*m_space_center, pos_sun, rot_sun, sun_rf, body_rf);
-            t_sb.header.stamp = now();
-            t_sb.header.frame_id = "sun";
-            t_sb.child_frame_id = name;
-            m_tf_broadcaster->sendTransform(t_sb);
-
-            // create only kerbin -> vessel
-            if (name != "kerbin") {
-                continue;
-            }
-
-            auto pos_body = m_vessel->position(body_rf);
-            auto rot_body = m_vessel->rotation(body_rf);
-
-            auto t_bv = get_transform(*m_space_center, pos_body, rot_body, body_rf, vessel_rf);
-            t_bv.header.stamp = now();
-            t_bv.header.frame_id = name;
-            t_bv.child_frame_id = "vessel";
-            m_tf_broadcaster->sendTransform(t_bv);
+            auto t_kerbin_body = get_transform(*m_space_center, pos_kerbin, rot_kerbin, kerbin_rf, body_rf);
+            t_kerbin_body.header.stamp = now();
+            t_kerbin_body.header.frame_id = "kerbin";
+            t_kerbin_body.child_frame_id = name;
+            m_tf_broadcaster->sendTransform(t_kerbin_body);
         }
+
+        // vessel -> current reference frame
+        std::string vessel_current = "kerbin";
+        if (frame.name != "vessel") {
+            vessel_current = frame.name;
+        }
+        auto vessel_rf = m_vessel->reference_frame();
+        auto current_rf = m_celestial_bodies[vessel_current].reference_frame();
+
+        auto pos_current = m_vessel->position(current_rf);
+        auto rot_current = m_vessel->rotation(current_rf);
+
+        auto t_vessel_current = get_transform(*m_space_center, pos_current, rot_current, current_rf, vessel_rf);
+        t_vessel_current.header.stamp = now();
+        t_vessel_current.header.frame_id = vessel_current;
+        t_vessel_current.child_frame_id = "vessel";
+        m_tf_broadcaster->sendTransform(t_vessel_current);
 
         // vessel -> parts
         for (auto& part : m_parts_data.parts) {
