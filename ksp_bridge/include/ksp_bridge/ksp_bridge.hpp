@@ -28,7 +28,8 @@ private:
     void validate_active_vessel();
     void invalidate_active_vessel();
     void find_active_vessel();
-    void init_communication();
+    void init_interfaces();
+    void init_celestial_bodies();
 
     bool change_reference_frame(const std::string& name);
 

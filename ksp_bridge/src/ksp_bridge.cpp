@@ -2,13 +2,11 @@
 #include <ksp_bridge/ksp_bridge.hpp>
 #include <ksp_bridge/utils.hpp>
 
-#include <stdlib.h>
-
 KSPBridge::KSPBridge()
     : rclcpp::Node("ksp_bridge")
 {
     declare_parameter<int64_t>("update_interval", 10);
-    declare_parameter<std::vector<std::string>>("celestial_bodies", { "sun", "kerbin", "mun" });
+    declare_parameter<std::vector<std::string>>("celestial_bodies", { "sun", "mun" });
 
     int64_t update_interval = get_parameter("update_interval").as_int();
     m_param_celestial_bodies = get_parameter("celestial_bodies").as_string_array();
@@ -93,7 +91,14 @@ void KSPBridge::find_active_vessel()
     }
 
     RCLCPP_INFO(get_logger(), "Vessel found: %s", m_vessel->name().c_str());
+    init_celestial_bodies();
+    init_interfaces();
+}
+
+void KSPBridge::init_celestial_bodies()
+{
     auto bodies = m_space_center->bodies();
+    m_celestial_bodies.clear();
 
     for (auto it = bodies.begin(); it != bodies.end(); ++it) {
         auto name = it->second.name();
@@ -106,21 +111,18 @@ void KSPBridge::find_active_vessel()
         }
     }
 
-    auto it = m_celestial_bodies.find("sun");
+    auto it = m_celestial_bodies.find("kerbin");
     if (it == m_celestial_bodies.end()) {
-        RCLCPP_FATAL(get_logger(), "Sun is a required celestial body.");
-        exit(1);
+        m_celestial_bodies["kerbin"] = bodies["Kerbin"];
+        RCLCPP_WARN(get_logger(), "Kerbin is added to celestial bodies.");
     }
 
     if (!change_reference_frame("kerbin")) {
-        RCLCPP_FATAL(get_logger(), "Unable to change the reference frame to kerbin.");
-        exit(1);
+        RCLCPP_ERROR(get_logger(), "Unable to change the reference frame to kerbin.");
     }
-
-    init_communication();
 }
 
-void KSPBridge::init_communication()
+void KSPBridge::init_interfaces()
 {
     m_vessel_publisher = create_publisher<ksp_bridge_interfaces::msg::Vessel>("/vessel", 10);
     m_control_publisher = create_publisher<ksp_bridge_interfaces::msg::Control>("/vessel/control", 10);
