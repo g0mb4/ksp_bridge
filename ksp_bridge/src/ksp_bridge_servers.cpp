@@ -16,7 +16,7 @@ void KSPBridge::next_stage_srv(
     res->succeded = true;
 }
 
-void KSPBridge::sas_srv(
+void KSPBridge::set_sas_srv(
     const ksp_bridge_interfaces::srv::SAS::Request::SharedPtr req,
     const ksp_bridge_interfaces::srv::SAS::Response::SharedPtr res)
 {
@@ -89,4 +89,17 @@ void KSPBridge::sas_srv(
     }
 
     res->succeded = true;
+}
+
+void KSPBridge::set_reference_frame(
+    const ksp_bridge_interfaces::srv::String::Request::SharedPtr req,
+    const ksp_bridge_interfaces::srv::String::Response::SharedPtr res)
+{
+    bool success = change_reference_frame(req->value);
+
+    res->succeded = success;
+    if (!success) {
+        res->error = "Unknown reference frame";
+        RCLCPP_ERROR(get_logger(), "Unknown reference frame: %s", req->value.c_str());
+    }
 }

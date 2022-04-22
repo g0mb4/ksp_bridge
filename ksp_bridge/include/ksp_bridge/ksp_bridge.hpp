@@ -13,6 +13,7 @@
 #include <ksp_bridge_interfaces/msg/vessel.hpp>
 #include <ksp_bridge_interfaces/srv/activation.hpp>
 #include <ksp_bridge_interfaces/srv/sas.hpp>
+#include <ksp_bridge_interfaces/srv/string.hpp>
 #include <mutex>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_ros/transform_broadcaster.h>
@@ -86,13 +87,18 @@ private:
 
     // servers
     rclcpp::Service<ksp_bridge_interfaces::srv::Activation>::SharedPtr m_next_stage_srv;
-    rclcpp::Service<ksp_bridge_interfaces::srv::SAS>::SharedPtr m_sas_srv;
+    rclcpp::Service<ksp_bridge_interfaces::srv::SAS>::SharedPtr m_set_sas_srv;
+    rclcpp::Service<ksp_bridge_interfaces::srv::String>::SharedPtr m_set_reference_frame_srv;
 
     void next_stage_srv(
         const ksp_bridge_interfaces::srv::Activation::Request::SharedPtr,
         const ksp_bridge_interfaces::srv::Activation::Response::SharedPtr);
 
-    void sas_srv(
+    void set_sas_srv(
         const ksp_bridge_interfaces::srv::SAS::Request::SharedPtr,
         const ksp_bridge_interfaces::srv::SAS::Response::SharedPtr);
+
+    void set_reference_frame(
+        const ksp_bridge_interfaces::srv::String::Request::SharedPtr,
+        const ksp_bridge_interfaces::srv::String::Response::SharedPtr);
 };

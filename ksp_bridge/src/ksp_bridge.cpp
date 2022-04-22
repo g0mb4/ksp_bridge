@@ -90,7 +90,7 @@ void KSPBridge::find_active_vessel()
         rclcpp::sleep_for(std::chrono::seconds(1));
     }
 
-    RCLCPP_INFO(get_logger(), "Vessel found: %s", m_vessel->name().c_str());
+    RCLCPP_INFO(get_logger(), "Vessel found: '%s'", m_vessel->name().c_str());
     init_celestial_bodies();
     init_interfaces();
 }
@@ -114,11 +114,11 @@ void KSPBridge::init_celestial_bodies()
     auto it = m_celestial_bodies.find("kerbin");
     if (it == m_celestial_bodies.end()) {
         m_celestial_bodies["kerbin"] = bodies["Kerbin"];
-        RCLCPP_WARN(get_logger(), "Kerbin is added to celestial bodies.");
+        RCLCPP_WARN(get_logger(), "'kerbin' is added to the celestial bodies.");
     }
 
     if (!change_reference_frame("kerbin")) {
-        RCLCPP_ERROR(get_logger(), "Unable to change the reference frame to kerbin.");
+        RCLCPP_ERROR(get_logger(), "Unable to change the reference frame to 'kerbin'.");
     }
 }
 
@@ -149,9 +149,15 @@ void KSPBridge::init_interfaces()
             &KSPBridge::next_stage_srv, this,
             std::placeholders::_1, std::placeholders::_2));
 
-    m_sas_srv = create_service<ksp_bridge_interfaces::srv::SAS>(
-        "/sas",
+    m_set_sas_srv = create_service<ksp_bridge_interfaces::srv::SAS>(
+        "/set_sas",
         std::bind(
-            &KSPBridge::sas_srv, this,
+            &KSPBridge::set_sas_srv, this,
+            std::placeholders::_1, std::placeholders::_2));
+
+    m_set_reference_frame_srv = create_service<ksp_bridge_interfaces::srv::String>(
+        "/set_reference_frame",
+        std::bind(
+            &KSPBridge::set_reference_frame, this,
             std::placeholders::_1, std::placeholders::_2));
 }
