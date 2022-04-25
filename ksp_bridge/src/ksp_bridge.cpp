@@ -90,6 +90,7 @@ void KSPBridge::find_active_vessel()
         rclcpp::sleep_for(std::chrono::seconds(1));
     }
 
+    m_vessel->control().set_input_mode(krpc::services::SpaceCenter::ControlInputMode::override);
     RCLCPP_INFO(get_logger(), "Vessel found: '%s'", m_vessel->name().c_str());
     init_celestial_bodies();
     init_interfaces();
