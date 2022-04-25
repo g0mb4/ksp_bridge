@@ -89,7 +89,7 @@ private:
 
             if (response->succeded) {
                 --m_current_stage;
-                RCLCPP_ERROR(get_logger(), "current stage: %d", m_current_stage);
+                RCLCPP_INFO(get_logger(), "current stage: %d", m_current_stage);
             } else {
                 RCLCPP_ERROR(get_logger(), "staging error: %s", response->error.c_str());
             }
