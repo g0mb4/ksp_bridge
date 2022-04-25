@@ -1,5 +1,4 @@
 #include <ksp_bridge_interfaces/msg/cmd_throttle.hpp>
-#include <ksp_bridge_interfaces/msg/control.hpp>
 #include <ksp_bridge_interfaces/msg/flight.hpp>
 #include <ksp_bridge_interfaces/srv/activation.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -15,13 +14,6 @@ public:
             [this](const ksp_bridge_interfaces::msg::Flight::SharedPtr msg) {
                 m_altitude = msg->mean_altitude;
                 m_vertical_speed = msg->vertical_speed;
-            });
-
-        m_control_sub = create_subscription<ksp_bridge_interfaces::msg::Control>(
-            "/vessel/control",
-            10,
-            [this](const ksp_bridge_interfaces::msg::Control::SharedPtr msg) {
-                m_current_stage = msg->current_stage;
             });
 
         m_cmd_throttle_pub = create_publisher<ksp_bridge_interfaces::msg::CmdThrottle>(
@@ -43,6 +35,7 @@ public:
 private:
     static constexpr double THROTTLE_ALTITUDE = 1'000.0;
     static constexpr double PARACHUTE_SPEED = 100.0;
+    static constexpr int INITIAL_STAGE = 3;
 
     void update()
     {
@@ -55,11 +48,16 @@ private:
             } else {
                 msg.throttle = 0.0;
                 m_cmd_throttle_pub->publish(msg);
-                next_stage();
+
+                if (!m_staging_in_progress) {
+                    next_stage();
+                }
             }
         } else if (m_current_stage == 1) {
             if (m_vertical_speed < PARACHUTE_SPEED) {
-                next_stage();
+                if (!m_staging_in_progress) {
+                    next_stage();
+                }
             }
         }
     }
@@ -76,6 +74,7 @@ private:
 
     void next_stage_clnt()
     {
+        m_staging_in_progress = true;
         auto client = create_client<ksp_bridge_interfaces::srv::Activation>("/next_stage");
 
         while (client->wait_for_service(std::chrono::seconds(1)) == false) {
@@ -88,20 +87,25 @@ private:
         try {
             auto response = future.get();
 
-            if (!response->succeded) {
+            if (response->succeded) {
+                --m_current_stage;
+                RCLCPP_ERROR(get_logger(), "current stage: %d", m_current_stage);
+            } else {
                 RCLCPP_ERROR(get_logger(), "staging error: %s", response->error.c_str());
             }
         } catch (const std::exception& e) {
             RCLCPP_ERROR(get_logger(), "staging error: %s", e.what());
         }
+
+        m_staging_in_progress = false;
     }
 
     rclcpp::TimerBase::SharedPtr m_update_timer;
     rclcpp::Subscription<ksp_bridge_interfaces::msg::Flight>::SharedPtr m_flight_sub;
-    rclcpp::Subscription<ksp_bridge_interfaces::msg::Control>::SharedPtr m_control_sub;
     rclcpp::Publisher<ksp_bridge_interfaces::msg::CmdThrottle>::SharedPtr m_cmd_throttle_pub;
     double m_altitude, m_vertical_speed;
-    int m_current_stage;
+    int m_current_stage { INITIAL_STAGE };
+    bool m_staging_in_progress { false };
 };
 
 int main(int argc, char* argv[])
