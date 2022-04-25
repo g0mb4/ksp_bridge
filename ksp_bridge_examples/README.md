@@ -6,12 +6,26 @@ Example usage of the *ksp_bridge* package.
 
 The ship goes up then falls down.
 
-### Assembly
+**Assembly**:
 
 ![up_and_down_assembly](../doc/img/up_and_down_assembly.jpg)
 
-### Usage
+**Usage**:
 
 ```bash
 ros2 launch ksp_bridge_examples up_and_down.launch.py
+```
+
+## Resource monitor
+
+Shows the available resources of the vessel.
+
+**Assembly**:
+
+Any.
+
+**Usage**:
+
+```bash
+ros2 launch ksp_bridge_examples resource_monitor.launch.py
 ```

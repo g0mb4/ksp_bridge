@@ -26,8 +26,15 @@ ament_target_dependencies(kspb_up_and_down
   ksp_bridge_interfaces
 )
 
+add_executable(kspb_resource_monitor src/resource_monitor.cpp)
+ament_target_dependencies(kspb_resource_monitor
+  rclcpp
+  ksp_bridge_interfaces
+)
+
 install(TARGETS
   kspb_up_and_down
+  kspb_resource_monitor
   DESTINATION lib/${PROJECT_NAME}
 )
 
