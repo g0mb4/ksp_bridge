@@ -3,9 +3,9 @@
 #include <ksp_bridge_interfaces/srv/activation.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-class KSPExampleUpAndDown : public rclcpp::Node {
+class KSPBExampleUpAndDown : public rclcpp::Node {
 public:
-    KSPExampleUpAndDown()
+    KSPBExampleUpAndDown()
         : Node("kspb_example_up_and_down")
     {
         m_flight_sub = create_subscription<ksp_bridge_interfaces::msg::Flight>(
@@ -29,7 +29,7 @@ public:
 
         next_stage();
         m_update_timer = create_wall_timer(std::chrono::milliseconds(33),
-            std::bind(&KSPExampleUpAndDown::update, this));
+            std::bind(&KSPBExampleUpAndDown::update, this));
     }
 
 private:
@@ -111,7 +111,7 @@ private:
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<KSPExampleUpAndDown>());
+    rclcpp::spin(std::make_shared<KSPBExampleUpAndDown>());
     rclcpp::shutdown();
     return 0;
 }
