@@ -43,6 +43,7 @@ ament_target_dependencies(${PROJECT_NAME}
   ksp_bridge_interfaces
   tf2
   tf2_ros
+  tf2_geometry_msgs
 )
 
 target_link_libraries(${PROJECT_NAME}
