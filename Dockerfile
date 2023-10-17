@@ -23,13 +23,13 @@ RUN ldconfig
 RUN mkdir -p /ros2_ws
 WORKDIR /ros2_ws
 RUN git clone https://github.com/clausqr/ksp_bridge.git src
-
 RUN . /opt/ros/humble/setup.sh && \
       colcon build 
-
 RUN echo "source /ros2_ws/install/local_setup.bash" >> /root/.bashrc
 
 ##  Build ksp_bridge
-# $ docker build -t ksp_bridge . 
+# $ docker build -t clausqr:ksp_bridge . 
 ## Running this container
-# $ docker run -it -v $(pwd):/ros_ws/src --net=host ksp_bridge
+# $ docker run -it -v $(pwd):/ros_ws/src --net=host clausqr:ksp_bridge
+## Inside:
+# $ ros2 launch ksp_bridge_examples resource_monitor.launch.py
