@@ -6,9 +6,7 @@ KSPBridge::KSPBridge()
     : rclcpp::Node("ksp_bridge")
 {
     declare_parameter<int64_t>("update_interval", 10);
-    printf("Declaring parameter: %s\n", "celestial_bodies"  );
     declare_parameter<std::vector<std::string>>("celestial_bodies", {"kerbin"});
-    printf("Declared parameter: %s\n", "celestial_bodies"  );
 
     int64_t update_interval = get_parameter("update_interval").as_int();
     m_param_celestial_bodies = get_parameter("celestial_bodies").as_string_array();
